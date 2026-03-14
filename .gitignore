@@ -1,11 +1,18 @@
 ## Python
 __pycache__/
+*.py[cod]
+*$py.class
 
+# IDE
 .idea/
 
 # Enviroments
 .env
+venv/
+.venv/
 env/
+ENV/
+*.venv
 
 # Gradle files
 .gradle/
