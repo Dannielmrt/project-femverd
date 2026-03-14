@@ -1,3 +1,12 @@
+## Python
+__pycache__/
+
+.idea/
+
+# Enviroments
+.env
+env/
+
 # Gradle files
 .gradle/
 build/
