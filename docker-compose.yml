@@ -1,0 +1,28 @@
+services:
+  # Servicio de Base de Datos
+  db:
+    image: postgres:15
+    container_name: femverd_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: femverd_pass
+      POSTGRES_DB: femverd_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./database/data:/var/lib/postgresql/data
+
+  # Tu API FastAPI
+  api:
+    build: ./femverd-api
+    container_name: femverd_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./femverd-api/app:/app/app
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql://admin:femverd_pass@db:5432/femverd_db
+    depends_on:
+      - db
