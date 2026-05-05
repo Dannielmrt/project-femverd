@@ -3,6 +3,9 @@ from .database import engine, Base
 from .models import user
 from .models import action
 from .routes import users, ingestion 
+from app.models.material_rule import MaterialRule    
+from app.models.green_point import GreenPoint        
+from app.models.external_system import ExternalSystem
 
 # Create tables if they do not exist
 Base.metadata.create_all(bind=engine)
