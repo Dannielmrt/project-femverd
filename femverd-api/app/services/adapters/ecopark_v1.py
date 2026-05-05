@@ -3,10 +3,23 @@ from .base import BaseAdapter, NormalizedEvent
 
 class EcoparkAdapter(BaseAdapter):
     def normalize(self, raw_data: dict) -> NormalizedEvent:
-        # We map the external weird names to our clean, internal names
+        
+        # Dictionary to translate the Ecopark's Spanish terms to our English standard
+        material_mapping = {
+            "plastico": "plastic",
+            "vidrio": "glass",
+            "pilas": "batteries",
+            "carton": "cardboard"
+        }
+        
+        # Extract the external material and translate it (defaults to the original if not found)
+        external_material = raw_data.get("waste_type", "").lower()
+        internal_material = material_mapping.get(external_material, external_material)
+        
+        # Map the external names to our clean format
         return NormalizedEvent(
             provider_id=raw_data.get("ecopark_id", "UNKNOWN_PROVIDER"),
             user_dni=raw_data.get("citizen_doc", ""),
-            material_type=raw_data.get("waste_type", ""),
+            material_type=internal_material,
             amount_kg=float(raw_data.get("weight_kg", 0.0))
         )
