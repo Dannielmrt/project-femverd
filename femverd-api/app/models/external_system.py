@@ -1,5 +1,6 @@
 # app/models/external_system.py
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from ..database import Base
 
 class ExternalSystem(Base):
@@ -9,3 +10,5 @@ class ExternalSystem(Base):
     provider_id = Column(String, unique=True, index=True, nullable=False)  # "ECO_VALENCIA_SUR"
     api_key_hash = Column(String, nullable=False)                          # Bcrypt hash of the API key
     adapter_type = Column(String, nullable=False)                          # "ecopark_v1"
+    # 1 Provider -> N Green Points
+    green_points = relationship("GreenPoint", back_populates="provider")
