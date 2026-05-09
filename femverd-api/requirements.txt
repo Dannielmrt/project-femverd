@@ -6,3 +6,4 @@ pydantic-settings
 cryptography
 python-dotenv
 bcrypt
+PyJWT[crypto]
