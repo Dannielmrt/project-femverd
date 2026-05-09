@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from .database import engine, Base
 from .models import user
 from .models import action
-from .routes import users, ingestion 
+from .routes import users, ingestion, auth
 from app.models.material_rule import MaterialRule    
 from app.models.green_point import GreenPoint        
 from app.models.external_system import ExternalSystem
@@ -15,6 +15,7 @@ app = FastAPI(title="FemVerd API")
 # Connect user and ingestion routes to the main API
 app.include_router(users.router)
 app.include_router(ingestion.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def home():
