@@ -12,6 +12,7 @@ from app.models.external_system import ExternalSystem
 from app.models.green_point import GreenPoint
 from app.models.material_rule import MaterialRule
 from app.services.security_service import decrypt_dni, encrypt_dni
+from app.services.audit_service import send_audit_log
 
 # Import adapters
 from app.services.adapters.ecopark_v1 import EcoparkAdapter
@@ -66,6 +67,10 @@ def process_event_in_background(event, provider_id: str):
         db.commit()
         
         print(f"BACKGROUND SUCCESS: {points_earned} points added to {user.user_name}", flush=True)
+
+        # Send secure log with tcp sockets
+        log_msg = f"User {user.user_name} (DNI Hash: {new_action.user_dni[-10:]}) recycled {event.amount_kg}kg of {event.material_type} at {provider_id}."
+        send_audit_log(log_msg)
         
     except Exception as e:
         print(f"BACKGROUND CRITICAL ERROR: {str(e)}", flush=True)
