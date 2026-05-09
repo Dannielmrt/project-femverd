@@ -7,3 +7,4 @@ cryptography
 python-dotenv
 bcrypt
 PyJWT[crypto]
+python-multipart
