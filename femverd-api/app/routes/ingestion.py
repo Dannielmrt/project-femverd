@@ -45,9 +45,13 @@ def process_event_in_background(event, provider_id: str):
             print(f"BACKGROUND ERROR: Missing data for DNI {event.user_dni} or Rule {event.material_type}", flush=True)
             return
 
-        # Calculate and Update
+        # 4. Calculate and Update atomically and prevent race conditions in DB
         points_earned = points_service.calculate_points(rule.points_per_unit, event.amount_kg)
-        user.points_balance += points_earned
+        
+        # add the points directly avoiding read-modify-write issues
+        db.query(User).filter(User.id == user.id).update(
+            {"points_balance": User.points_balance + points_earned}
+        )
 
         # Save Action
         new_action = Action(
