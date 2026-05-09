@@ -19,11 +19,24 @@ from app.services.adapters.ecopark_v1 import EcoparkAdapter
 
 router = APIRouter(prefix="/ingestion", tags=["Ingest M2M (External)"])
 
-def get_adapter(provider_name: str):
-    """Factory to return the correct adapter based on the provider."""
-    if provider_name.lower() == "ecopark":
-        return EcoparkAdapter()
-    raise HTTPException(status_code=400, detail=f"No adapter found for provider: {provider_name}")
+ADAPTER_REGISTRY = {
+    "ecopark_v1": EcoparkAdapter,
+    # "smartbin_v1": SmartBinAdapter 
+}
+
+def get_adapter(adapter_type: str):
+    """
+    Dynamic factory using Registry to return the correct adapter based on the DB type
+    """
+    adapter_class = ADAPTER_REGISTRY.get(adapter_type.lower())
+    
+    if not adapter_class:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No adapter registered for type: {adapter_type}. Available: {list(ADAPTER_REGISTRY.keys())}"
+        )
+    
+    return adapter_class()
 
 def process_event_in_background(event, provider_id: str):
     """
@@ -46,7 +59,7 @@ def process_event_in_background(event, provider_id: str):
             print(f"BACKGROUND ERROR: Missing data for DNI {event.user_dni} or Rule {event.material_type}", flush=True)
             return
 
-        # 4. Calculate and Update atomically and prevent race conditions in DB
+        # Calculate and Update atomically and prevent race conditions in DB
         points_earned = points_service.calculate_points(rule.points_per_unit, event.amount_kg)
         
         # add the points directly avoiding read-modify-write issues
@@ -80,30 +93,38 @@ def process_event_in_background(event, provider_id: str):
 
 
 # status_code=202
-@router.post("/{provider_name}", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/{provider_id}", status_code=status.HTTP_202_ACCEPTED)
 def receive_event(
-    provider_name: str, 
+    provider_id: str, 
     raw_payload: Dict[str, Any], 
     background_tasks: BackgroundTasks, 
     api_key: str = Depends(get_api_key)
 ):
-    
-    # Translate JSON
-    adapter = get_adapter(provider_name)
-    try:
-        event = adapter.normalize(raw_payload)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Data parsing error: {str(e)}")
-
-    # Security Check (API Key)
     db = SessionLocal()
     try:
-        provider = db.query(ExternalSystem).filter(ExternalSystem.provider_id == event.provider_id).first()
-        if not provider or not bcrypt.checkpw(api_key.encode('utf-8'), provider.api_key_hash.encode('utf-8')):
+        # Search por the provider in the DB using URL 
+        provider = db.query(ExternalSystem).filter(ExternalSystem.provider_id == provider_id).first()
+        if not provider:
+            raise HTTPException(status_code=404, detail="Provider not found in DB")
+
+        # Check the API Key
+        if not bcrypt.checkpw(api_key.encode('utf-8'), provider.api_key_hash.encode('utf-8')):
             raise HTTPException(status_code=403, detail="Invalid Provider or API Key")
+
+        # Get the adapter from the DB
+        adapter = get_adapter(provider.adapter_type)
+        
+        # Translate to JSON
+        event = adapter.normalize(raw_payload)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Data parsing error: {str(e)}")
     finally:
         db.close()
 
+    # Launch background thread 
     background_tasks.add_task(process_event_in_background, event, provider.provider_id)
 
     # response to the external system

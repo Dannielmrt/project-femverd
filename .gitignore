@@ -51,3 +51,4 @@ google-services.json
 
 # Docker / DB data
 database/data/
+femverd-api/keys
