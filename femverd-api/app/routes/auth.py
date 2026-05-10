@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+import bcrypt
 
 from app.database import get_db
 from app.models.user import User
@@ -27,8 +28,8 @@ def login_for_access_token(
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect DNI")
 
-    # Verify password (Hardcoded "1234") [CAMBIAR A bcrypt.checkpw()]
-    if form_data.password != "1234":
+    # 2. Verify password securely using Bcrypt
+    if not bcrypt.checkpw(form_data.password.encode('utf-8'), user.hashed_password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Incorrect password")
 
     # Create the JWT Token with the DNI as the subject ("sub")
