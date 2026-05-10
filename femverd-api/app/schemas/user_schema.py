@@ -4,3 +4,4 @@ from pydantic import BaseModel
 class UserCreate(BaseModel):
     user_name: str
     dni: str  # Request the raw DNI, then it will be stored encrypted in the DB
+    password: str
