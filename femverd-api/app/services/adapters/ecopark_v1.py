@@ -1,10 +1,23 @@
 # app/services/adapters/ecopark_v1.py
+from pydantic import BaseModel, Field, ValidationError
+from fastapi import HTTPException
 from .base import BaseAdapter, NormalizedEvent
+
+class EcoparkPayload(BaseModel):
+    ecopark_id: str
+    citizen_doc: str
+    waste_type: str
+    weight_kg: float = Field(gt=0, description="Weight must be strictly greater than 0")
 
 class EcoparkAdapter(BaseAdapter):
     def normalize(self, raw_data: dict) -> NormalizedEvent:
-        
-        # Dictionary to translate the Ecopark's Spanish terms to our English standard
+        try:
+            # If raw_data is malformed, Pydantic raises a ValidationError
+            valid_data = EcoparkPayload(**raw_data)
+        except ValidationError as e:
+            # Catch the Pydantic error and convert it to an HTTP 422 Unprocessable Entity
+            raise HTTPException(status_code=422, detail=e.errors())
+
         material_mapping = {
             "plastico": "plastic",
             "vidrio": "glass",
@@ -12,14 +25,12 @@ class EcoparkAdapter(BaseAdapter):
             "carton": "cardboard"
         }
         
-        # Extract the external material and translate it (defaults to the original if not found)
-        external_material = raw_data.get("waste_type", "").lower()
-        internal_material = material_mapping.get(external_material, external_material)
+        internal_material = material_mapping.get(valid_data.waste_type.lower(), valid_data.waste_type.lower())
         
-        # Map the external names to our clean format
+        # Return the normalized event (validated variables)
         return NormalizedEvent(
-            provider_id=raw_data.get("ecopark_id", "UNKNOWN_PROVIDER"),
-            user_dni=raw_data.get("citizen_doc", ""),
+            provider_id=valid_data.ecopark_id,
+            user_dni=valid_data.citizen_doc,
             material_type=internal_material,
-            amount_kg=float(raw_data.get("weight_kg", 0.0))
+            amount_kg=valid_data.weight_kg
         )
