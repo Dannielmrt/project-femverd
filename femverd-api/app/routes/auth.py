@@ -27,10 +27,14 @@ def login_for_access_token(
 
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect DNI")
+    
+    if not user.hashed_password:
+        raise HTTPException(status_code=401, detail="Legacy user without password. Please register again.")
 
-    # 2. Verify password securely using Bcrypt
+    # Verify password securely using Bcrypt
     if not bcrypt.checkpw(form_data.password.encode('utf-8'), user.hashed_password.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Incorrect password")
+        
 
     # Create the JWT Token with the DNI as the subject ("sub")
     access_token = create_access_token(data={"sub": form_data.username})
