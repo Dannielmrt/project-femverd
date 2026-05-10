@@ -1,23 +1,28 @@
 # app/services/auth_service.py
+# app/services/auth_service.py
 import jwt
 import os
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
-# os.path to build reliable absolute paths to our keys folder
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-PRIVATE_KEY_PATH = os.path.join(BASE_DIR, "keys", "private_key.pem")
-PUBLIC_KEY_PATH = os.path.join(BASE_DIR, "keys", "public_key.pem")
+# auth_service.py -> services/ -> app/ -> femverd-api/
+SERVICES_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DIR = os.path.dirname(SERVICES_DIR)
+PROJECT_ROOT = os.path.dirname(APP_DIR)
+
+KEYS_DIR = os.path.join(PROJECT_ROOT, "keys")
+PRIVATE_KEY_PATH = os.path.join(KEYS_DIR, "private_key.pem")
+PUBLIC_KEY_PATH = os.path.join(KEYS_DIR, "public_key.pem")
 
 # Load the keys into memory when the API starts
-with open(PRIVATE_KEY_PATH, "r") as f:
+with open(PRIVATE_KEY_PATH, "rb") as f:
     PRIVATE_KEY = f.read()
 
-with open(PUBLIC_KEY_PATH, "r") as f:
+with open(PUBLIC_KEY_PATH, "rb") as f:
     PUBLIC_KEY = f.read()
 
 ALGORITHM = "RS256" # Asymmetric RSA signature
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 # The app token will be valid for 1 hour
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 def create_access_token(data: dict) -> str:
     """
