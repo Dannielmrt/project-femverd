@@ -1,11 +1,14 @@
 # app/routes/auth.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from typing import Optional, List
 import bcrypt
 
 from app.database import get_db
 from app.models.user import User
+from app.models.action import Action
+from app.models.material_rule import MaterialRule
 from app.services.security_service import decrypt_dni
 from app.services.auth_service import create_access_token
 from app.auth.security import get_current_user_token
@@ -61,3 +64,73 @@ def read_users_me(
         "name": user.user_name,
         "current_points": user.points_balance
     }
+
+@router.delete("/me")
+def delete_user_account(
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Deletes the user account and associated recycling records.
+    """
+    all_users = db.query(User).all()
+    user = next((u for u in all_users if decrypt_dni(u.encrypted_dni) == user_dni), None)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Cascade Delete, remove associated actions to prevent orphaned records
+    all_actions = db.query(Action).all()
+    actions_to_delete = [a for a in all_actions if decrypt_dni(a.user_dni) == user_dni]
+    
+    for action in actions_to_delete:
+        db.delete(action)
+
+    # delete the user
+    db.delete(user)
+    db.commit()
+
+    return {"message": "Account and associated data successfully deleted"}
+
+@router.get("/me/history")
+def get_user_history(
+    material: Optional[str] = Query(None, description="Filter by material name (e.g., plastic)"),
+    min_weight: Optional[float] = Query(None, description="Filter by minimum weight in KG"),
+    limit: int = Query(10, description="Maximum number of records to return"),
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the user's recycling history with optional filters
+    """
+    # Fetch all actions and filter by the decrypted DNI
+    all_actions = db.query(Action).all()
+    user_actions = [a for a in all_actions if decrypt_dni(a.user_dni) == user_dni]
+
+    filtered_actions = []
+    
+    # Apply filters
+    for action in user_actions:
+        if min_weight and action.amount_kg < min_weight:
+            continue
+            
+        if material:
+            rule = db.query(MaterialRule).filter(MaterialRule.id == action.material_rule_id).first()
+            if not rule or rule.material_name.lower() != material.lower():
+                continue
+                
+        filtered_actions.append(action)
+
+    # Sort from newest to oldest by ID and apply limit
+    filtered_actions.sort(key=lambda x: x.id, reverse=True)
+    result = filtered_actions[:limit]
+
+    return [
+        {
+            "id": a.id,
+            "amount_kg": a.amount_kg,
+            "generated_points": a.generated_points,
+            "material_id": a.material_rule_id,
+            "green_point_id": a.green_point_id
+        } for a in result
+    ]
