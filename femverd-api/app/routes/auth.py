@@ -90,4 +90,47 @@ def delete_user_account(
     db.delete(user)
     db.commit()
 
-    return {"message": "Account and associated data successfully deleted (GDPR Compliant)"}
+    return {"message": "Account and associated data successfully deleted"}
+
+@router.get("/me/history")
+def get_user_history(
+    material: Optional[str] = Query(None, description="Filter by material name (e.g., plastic)"),
+    min_weight: Optional[float] = Query(None, description="Filter by minimum weight in KG"),
+    limit: int = Query(10, description="Maximum number of records to return"),
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the user's recycling history with optional filters
+    """
+    # Fetch all actions and filter by the decrypted DNI
+    all_actions = db.query(Action).all()
+    user_actions = [a for a in all_actions if decrypt_dni(a.user_dni) == user_dni]
+
+    filtered_actions = []
+    
+    # Apply filters
+    for action in user_actions:
+        if min_weight and action.amount_kg < min_weight:
+            continue
+            
+        if material:
+            rule = db.query(MaterialRule).filter(MaterialRule.id == action.material_rule_id).first()
+            if not rule or rule.material_name.lower() != material.lower():
+                continue
+                
+        filtered_actions.append(action)
+
+    # Sort from newest to oldest by ID and apply limit
+    filtered_actions.sort(key=lambda x: x.id, reverse=True)
+    result = filtered_actions[:limit]
+
+    return [
+        {
+            "id": a.id,
+            "amount_kg": a.amount_kg,
+            "generated_points": a.generated_points,
+            "material_id": a.material_rule_id,
+            "green_point_id": a.green_point_id
+        } for a in result
+    ]
