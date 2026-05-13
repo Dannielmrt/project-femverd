@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Optional, List
+from datetime import datetime
 import bcrypt
 
 from app.database import get_db
@@ -86,7 +87,7 @@ def delete_user_account(
     for action in actions_to_delete:
         db.delete(action)
 
-    # delete the user
+    # finally delete the user
     db.delete(user)
     db.commit()
 
@@ -128,3 +129,56 @@ def get_user_history(
             "green_point_id": a.green_point_id
         } for a in result
     ]
+
+@router.get("/me/certificate")
+def get_annual_certificate(
+    year: int = Query(..., description="Year for the tax reduction certificate"),
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Generates the aggregated data needed for the Official Environmental Impact Certificate.
+    """
+    # Search user
+    all_users = db.query(User).all()
+    user = next((u for u in all_users if decrypt_dni(u.encrypted_dni) == user_dni), None)
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Filter by actions and year
+    all_actions = db.query(Action).all()
+    user_actions = [
+        a for a in all_actions 
+        if decrypt_dni(a.user_dni) == user_dni and a.created_at and a.created_at.year == year
+    ]
+
+    # Group data by material
+    materials_summary = {}
+    total_points_year = 0.0
+
+    for action in user_actions:
+        rule = db.query(MaterialRule).filter(MaterialRule.id == action.material_rule_id).first()
+        mat_name = rule.material_name if rule else "Desconocido"
+        unit = rule.unit_type if rule else "ud"
+
+        if mat_name not in materials_summary:
+            materials_summary[mat_name] = {"total_quantity": 0.0, "unit": unit}
+            
+        materials_summary[mat_name]["total_quantity"] += action.quantity
+        total_points_year += action.generated_points
+
+    # Format the output for the app
+    formatted_materials = [
+        {"material": name, "total_quantity": data["total_quantity"], "unit": data["unit"]}
+        for name, data in materials_summary.items()
+    ]
+
+    return {
+        "certificate_year": year,
+        "citizen_name": user.user_name,
+        "citizen_dni": user_dni, # Decrypted DNI (for the official document only)
+        "member_since": user.created_at.strftime("%Y-%m-%d") if user.created_at else None,
+        "total_points_generated": total_points_year,
+        "materials_breakdown": formatted_materials
+    }
