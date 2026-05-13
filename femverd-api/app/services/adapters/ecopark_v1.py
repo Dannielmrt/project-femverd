@@ -32,5 +32,5 @@ class EcoparkAdapter(BaseAdapter):
             provider_id=valid_data.ecopark_id,
             user_dni=valid_data.citizen_doc,
             material_type=internal_material,
-            amount_kg=valid_data.weight_kg
+            quantity=valid_data.weight_kg
         )

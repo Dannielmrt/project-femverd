@@ -8,7 +8,7 @@ class NormalizedEvent(BaseModel):
     provider_id: str
     user_dni: str
     material_type: str
-    amount_kg: float
+    quantity: float
 
 class BaseAdapter(ABC):
     @abstractmethod
