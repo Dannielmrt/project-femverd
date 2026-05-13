@@ -1,4 +1,3 @@
-# app/models/green_point.py
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from ..database import Base
@@ -8,11 +7,13 @@ class GreenPoint(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    latitude = Column(Float, nullable=False) # provisional (localization)
-    longitude = Column(Float, nullable=False) # provisional (localization)
-    point_type = Column(String, nullable=False)  # "ecopark"/"vending_machine"
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    point_type = Column(String, nullable=False)
+    
+    address = Column(String, nullable=True)
+    schedule = Column(String, nullable=True)
+    accepted_materials = Column(String, nullable=True)
 
-    # FOREIGN KEY Linking to the external system's unique provider_id
     provider_id = Column(String, ForeignKey("external_systems.provider_id"))
-    # N Green Points -> 1 Provider
     provider = relationship("ExternalSystem", back_populates="green_points")

@@ -36,7 +36,10 @@ def seed_database():
                 latitude=39.4699,
                 longitude=-0.3763,
                 point_type="ecopark",
-                provider_id="ECO_VALENCIA_SUR" # Foreign Key matching the provider
+                address="Av. dels Germans Machado, s/n", 
+                schedule="L-V: 09:00 - 20:00 | S-D: 10:00 - 14:00", 
+                accepted_materials="Plástico, Vidrio, Pilas, Aceite, Muebles", 
+                provider_id="ECO_VALENCIA_SUR" 
             )
             db.add(ecopark)
             db.commit()

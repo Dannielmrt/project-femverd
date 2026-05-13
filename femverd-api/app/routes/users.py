@@ -23,6 +23,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     # Save user with both layers of security
     new_user = User(
         user_name=user_data.user_name, 
+        email=user_data.email,
         encrypted_dni=secure_dni,
         hashed_password=hashed_pw  # Save the hash
     )

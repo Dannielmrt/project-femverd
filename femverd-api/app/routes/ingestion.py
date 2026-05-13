@@ -60,7 +60,7 @@ def process_event_in_background(event, provider_id: str):
             return
 
         # Calculate and Update atomically and prevent race conditions in DB
-        points_earned = points_service.calculate_points(rule.points_per_unit, event.amount_kg)
+        points_earned = points_service.calculate_points(rule.points_per_unit, event.quantity)
         
         # add the points directly avoiding read-modify-write issues
         db.query(User).filter(User.id == user.id).update(
@@ -70,7 +70,7 @@ def process_event_in_background(event, provider_id: str):
         # Save Action
         new_action = Action(
             user_dni=encrypt_dni(event.user_dni),
-            amount_kg=event.amount_kg,
+            quantity=event.quantity,
             generated_points=points_earned,
             green_point_id=green_point.id,
             material_rule_id=rule.id
@@ -82,7 +82,7 @@ def process_event_in_background(event, provider_id: str):
         print(f"BACKGROUND SUCCESS: {points_earned} points added to {user.user_name}", flush=True)
 
         # Send secure log with tcp sockets
-        log_msg = f"User {user.user_name} (DNI Hash: {new_action.user_dni[-10:]}) recycled {event.amount_kg}kg of {event.material_type} at {provider_id}."
+        log_msg = f"User {user.user_name} (DNI Hash: {new_action.user_dni[-10:]}) recycled {event.quantity}kg of {event.material_type} at {provider_id}."
         send_audit_log(log_msg)
         
     except Exception as e:
