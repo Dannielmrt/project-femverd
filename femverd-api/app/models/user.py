@@ -11,4 +11,4 @@ class User(Base):
     user_name = Column(String)
     points_balance = Column(Float, default=0.0)
     hashed_password = Column(String)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
