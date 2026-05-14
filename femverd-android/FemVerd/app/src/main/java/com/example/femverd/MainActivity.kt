@@ -3,8 +3,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.compose.FemVerdTheme
 import com.example.femverd.ui.navigation.FemVerdApp
-import com.example.femverd.ui.theme.FemVerdTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

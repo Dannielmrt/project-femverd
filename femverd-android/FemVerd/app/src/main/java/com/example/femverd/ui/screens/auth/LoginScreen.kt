@@ -52,7 +52,7 @@ fun LoginScreen(
         Text(
             text = "Welcome citizen",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(48.dp))
