@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
+import com.example.femverd.ui.screens.home.HomeScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -114,7 +115,9 @@ fun FemVerdApp() {
                         }
                     )
                 }
-                composable(BottomNavItem.Home.route) { Text("Pantalla de Inicio", Modifier.padding(16.dp)) }
+                composable(BottomNavItem.Home.route) {
+                    HomeScreen()
+                }
                 composable(BottomNavItem.History.route) { Text("Pantalla de Historial", Modifier.padding(16.dp)) }
                 composable(BottomNavItem.Map.route) { Text("Pantalla del Mapa", Modifier.padding(16.dp)) }
 
