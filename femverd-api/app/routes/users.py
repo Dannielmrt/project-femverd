@@ -6,7 +6,7 @@ import bcrypt
 from ..database import get_db
 from ..models.user import User
 from ..schemas.user_schema import UserCreate
-from app.services.security_service import encrypt_dni
+from app.services.security_service import encrypt_dni, hash_dni
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -15,6 +15,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     
     # Encrypt DNI with Fernet 
     secure_dni = encrypt_dni(user_data.dni)
+    hashed_dni_search = hash_dni(user_data.dni)
     
     # Hash Password with Bcrypt 
     salt = bcrypt.gensalt()
@@ -25,6 +26,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
         user_name=user_data.user_name, 
         email=user_data.email,
         encrypted_dni=secure_dni,
+        dni_hash=hashed_dni_search,
         hashed_password=hashed_pw  # Save the hash
     )
     

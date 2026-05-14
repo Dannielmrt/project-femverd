@@ -7,7 +7,7 @@ class Action(Base):
     __tablename__ = "actions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_dni = Column(String, nullable=False)  # Encrypted DNI
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     quantity = Column(Float, nullable=False) 
     generated_points = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

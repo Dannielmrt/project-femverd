@@ -10,7 +10,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.action import Action
 from app.models.material_rule import MaterialRule
-from app.services.security_service import decrypt_dni
+from app.services.security_service import decrypt_dni, hash_dni
 from app.services.auth_service import create_access_token
 from app.auth.security import get_current_user_token
 
@@ -25,9 +25,9 @@ def login_for_access_token(
     Receives DNI (username) and password from the mobile app.
     Returns an RSA-signed JWT if credentials are correct.
     """
-    # Search for the user by DNI (handling Fernet encryption)
-    all_users = db.query(User).all()
-    user = next((u for u in all_users if decrypt_dni(u.encrypted_dni) == form_data.username), None)
+
+    search_hash = hash_dni(form_data.username)
+    user = db.query(User).filter(User.dni_hash == search_hash).first()
 
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect DNI")
