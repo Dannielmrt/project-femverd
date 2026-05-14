@@ -38,61 +38,45 @@ def get_adapter(adapter_type: str):
     
     return adapter_class()
 
-def process_event_in_background(event, provider_id: str):
+def process_event_in_background(user_id: int, rule_id: int, green_point_id: int, quantity: float, user_dni_raw: str, material_type: str, provider_id: str):
     """
-    BACKGROUND THREAD: Handles the heavy DB operations asynchronously.
+    BACKGROUND THREAD: receives IDs directly to avoid searching again and prevent decryption loops in background.
     """
-    # Open an independent DB session for this thread
     db = SessionLocal()
-    
     try:
-        # Fetch relations
-        green_point = db.query(GreenPoint).filter(GreenPoint.provider_id == provider_id).first()
-        rule = db.query(MaterialRule).filter(MaterialRule.material_name == event.material_type).first()
+        # Atomic points update
+        points_earned = points_service.calculate_points(
+            db.query(MaterialRule).filter(MaterialRule.id == rule_id).first().points_per_unit, 
+            quantity
+        )
         
-        # Find User (Fernet)
-        all_users = db.query(User).all()
-        user = next((u for u in all_users if decrypt_dni(u.encrypted_dni) == event.user_dni), None)
-        
-        if not user or not rule or not green_point:
-            # print to logs instead of raising HTTP exceptions
-            print(f"BACKGROUND ERROR: Missing data for DNI {event.user_dni} or Rule {event.material_type}", flush=True)
-            return
-
-        # Calculate and Update atomically and prevent race conditions in DB
-        points_earned = points_service.calculate_points(rule.points_per_unit, event.quantity)
-        
-        # add the points directly avoiding read-modify-write issues
-        db.query(User).filter(User.id == user.id).update(
+        db.query(User).filter(User.id == user_id).update(
             {"points_balance": User.points_balance + points_earned}
         )
 
         # Save Action
         new_action = Action(
-            user_dni=encrypt_dni(event.user_dni),
-            quantity=event.quantity,
+            user_dni=encrypt_dni(user_dni_raw),
+            quantity=quantity,
             generated_points=points_earned,
-            green_point_id=green_point.id,
-            material_rule_id=rule.id
+            green_point_id=green_point_id,
+            material_rule_id=rule_id
         )
         
         db.add(new_action)
         db.commit()
         
-        print(f"BACKGROUND SUCCESS: {points_earned} points added to {user.user_name}", flush=True)
-
-        # Send secure log with tcp sockets
-        log_msg = f"User {user.user_name} (DNI Hash: {new_action.user_dni[-10:]}) recycled {event.quantity}kg of {event.material_type} at {provider_id}."
-        send_audit_log(log_msg)
+        # Logs
+        print(f"BACKGROUND SUCCESS: {points_earned} points added.", flush=True)
+        send_audit_log(f"User ID {user_id} recycled {quantity}kg at {provider_id}")
         
     except Exception as e:
-        print(f"BACKGROUND CRITICAL ERROR: {str(e)}", flush=True)
         db.rollback()
+        print(f"BACKGROUND CRITICAL ERROR: {str(e)}", flush=True)
     finally:
-        db.close()
+        db.close() # Always close the connection to avoid hanging the reload
 
 
-# status_code=202
 @router.post("/{provider_id}", status_code=status.HTTP_202_ACCEPTED)
 def receive_event(
     provider_id: str, 
@@ -102,33 +86,39 @@ def receive_event(
 ):
     db = SessionLocal()
     try:
-        # Search por the provider in the DB using URL 
+        # Provider validation
         provider = db.query(ExternalSystem).filter(ExternalSystem.provider_id == provider_id).first()
         if not provider:
-            raise HTTPException(status_code=404, detail="Provider not found in DB")
+            raise HTTPException(status_code=404, detail="Provider not found")
 
-        # Check the API Key
         if not bcrypt.checkpw(api_key.encode('utf-8'), provider.api_key_hash.encode('utf-8')):
-            raise HTTPException(status_code=403, detail="Invalid Provider or API Key")
+            raise HTTPException(status_code=403, detail="Invalid API Key")
 
-        # Get the adapter from the DB
+        # Adapter & Normalization
         adapter = get_adapter(provider.adapter_type)
-        
-        # Translate to JSON
         event = adapter.normalize(raw_payload)
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Data parsing error: {str(e)}")
+
+        # Check if Rule and User exist BEFORE starting background task
+        rule = db.query(MaterialRule).filter(MaterialRule.material_name == event.material_type).first()
+        if not rule:
+            raise HTTPException(status_code=400, detail=f"Material rule '{event.material_type}' not found")
+
+        all_users = db.query(User).all()
+        user = next((u for u in all_users if decrypt_dni(u.encrypted_dni) == event.user_dni), None)
+        if not user:
+            raise HTTPException(status_code=404, detail=f"User with DNI {event.user_dni} not found")
+
+        green_point = db.query(GreenPoint).filter(GreenPoint.provider_id == provider_id).first()
+        if not green_point:
+            raise HTTPException(status_code=404, detail="Green point not linked to provider")
+
+        # Launch background task with ALREADY VALIDATED data
+        background_tasks.add_task(
+            process_event_in_background, 
+            user.id, rule.id, green_point.id, event.quantity, event.user_dni, event.material_type, provider_id
+        )
+
+        return {"status": "Accepted", "message": "Processing recycling event..."}
+
     finally:
         db.close()
-
-    # Launch background thread 
-    background_tasks.add_task(process_event_in_background, event, provider.provider_id)
-
-    # response to the external system
-    return {
-        "status": "Accepted",
-        "message": "Event received and currently processing in the background."
-    }
