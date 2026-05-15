@@ -19,7 +19,7 @@ from app.auth.security import get_current_user_token
 router = APIRouter(prefix="/auth", tags=["Mobile App Authentication"])
 
 class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
+    user_name: Optional[str] = None
     email: Optional[str] = None
 
 @router.post("/login")
@@ -73,7 +73,7 @@ def update_user_profile(
     user = db.query(User).filter(User.dni_hash == search_hash).first()
     if not user: raise HTTPException(status_code=404, detail="User not found")
 
-    if update_data.full_name: user.full_name = update_data.full_name
+    if update_data.user_name: user.user_name = update_data.user_name
     if update_data.email: user.email = update_data.email
 
     db.commit()
