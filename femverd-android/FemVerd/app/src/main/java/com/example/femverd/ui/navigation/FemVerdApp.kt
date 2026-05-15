@@ -128,20 +128,13 @@ fun FemVerdApp() {
                 composable(BottomNavItem.Home.route) {
                     HomeScreen(navController)
                 }
-                composable("rewards") { RewardsScreen() }
+                composable("rewards") { RewardsScreen(navController) }
                 composable(BottomNavItem.History.route) { Text("History Screen", Modifier.padding(16.dp)) }
                 composable(BottomNavItem.Map.route) { Text("Map Screen", Modifier.padding(16.dp)) }
 
                 composable(DrawerItem.Profile.route) { Text("Profile Screen", Modifier.padding(16.dp)) }
                 composable(DrawerItem.Certificate.route) { Text("Certificate Screen", Modifier.padding(16.dp)) }
                 composable(DrawerItem.Help.route) { Text("Help Screen", Modifier.padding(16.dp)) }
-                /*
-                composable(BottomNavItem.Home.route) {
-                    // HomeScreen.kt
-                    HomeScreen()
-                }
-                 */
-
             }
         }
     }
