@@ -1,5 +1,7 @@
 package com.example.femverd.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,11 +15,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
 import com.example.femverd.ui.screens.certificate.CertificateScreen
+import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
 import com.example.femverd.ui.screens.profile.ProfileScreen
 import com.example.femverd.ui.screens.rewards.RewardsScreen
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun FemVerdApp() {
     val navController = rememberNavController()
@@ -131,7 +135,9 @@ fun FemVerdApp() {
                     HomeScreen(navController)
                 }
                 composable("rewards") { RewardsScreen(navController) }
-                composable(BottomNavItem.History.route) { Text("History Screen", Modifier.padding(16.dp)) }
+                composable(BottomNavItem.History.route) {
+                    HistoryScreen()
+                }
                 composable(BottomNavItem.Map.route) { Text("Map Screen", Modifier.padding(16.dp)) }
 
                 composable(DrawerItem.Profile.route) {
