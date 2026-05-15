@@ -4,9 +4,16 @@ data class LoginResponse(val access_token: String, val token_type: String)
 data class UserMe(
     val dni: String,
     val name: String,
+    val email: String,
     val current_points: Double,
     val total_points: Double
 )
+
+data class UserUpdateRequest(
+    val user_name: String,
+    val email: String
+)
+
 data class HistoryItem(
     val id: Int,
     val date: String,
