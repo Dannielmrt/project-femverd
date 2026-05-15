@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.action import Action
 from app.models.material_rule import MaterialRule
 from app.models.redemption import Redemption
+from app.models.green_point import GreenPoint
 from app.services.security_service import hash_dni
 from app.services.auth_service import create_access_token
 from app.auth.security import get_current_user_token
@@ -109,6 +110,7 @@ def get_user_history(
 ):
     """
     Returns the user's recycling history using highly optimized indexed DB queries.
+    Maps raw IDs to names for the frontend.
     """
     # Find user via Blind Index
     search_hash = hash_dni(user_dni)
@@ -130,16 +132,23 @@ def get_user_history(
     # Sort by newest and apply the result limit
     actions = query.order_by(Action.id.desc()).limit(limit).all()
 
-    return [
-        {
+    # Build the user-friendly response list
+    history_result = []
+    for a in actions:
+        # Fetch the semantic names for each action
+        rule = db.query(MaterialRule).filter(MaterialRule.id == a.material_rule_id).first()
+        punto = db.query(GreenPoint).filter(GreenPoint.id == a.green_point_id).first()
+        
+        history_result.append({
             "id": a.id,
             "date": a.created_at.isoformat() if a.created_at else None,
             "quantity": a.quantity,
             "generated_points": a.generated_points,
-            "material_id": a.material_rule_id,
-            "green_point_id": a.green_point_id
-        } for a in actions
-    ]
+            "material_name": rule.material_name if rule else "Unknown Material",
+            "location": punto.name if punto else f"Ecopark #{a.green_point_id}"
+        })
+
+    return history_result
 
 @router.get("/me/certificate")
 def get_annual_certificate(
