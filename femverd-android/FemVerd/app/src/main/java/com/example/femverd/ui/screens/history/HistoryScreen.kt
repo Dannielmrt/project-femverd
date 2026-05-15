@@ -85,7 +85,6 @@ fun HistoryScreen(viewModel: HistoryViewModel = viewModel()) {
 fun ExpandableHistoryCard(item: HistoryItem) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-    // Color animation
     val containerColor by animateColorAsState(
         targetValue = if (expanded) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         label = "cardColorAnimation"
@@ -95,7 +94,6 @@ fun ExpandableHistoryCard(item: HistoryItem) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded }
-            // Physics-based spring animation with bounce effect
             .animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -115,22 +113,26 @@ fun ExpandableHistoryCard(item: HistoryItem) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
                     Icon(
                         imageVector = Icons.Default.Recycling,
-                        contentDescription = "Material Icon",
+                        contentDescription = "Recycling Icon",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
+                        // Show the actual Material Name
                         Text(
-                            text = "Material ID: ${item.material_id}",
+                            text = item.material_name,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${item.quantity} kg processed",
+                            text = "${item.quantity} kg recycled",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -147,28 +149,39 @@ fun ExpandableHistoryCard(item: HistoryItem) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (expanded) "Toggle Details" else "Expand Details",
+                        contentDescription = "Toggle Details",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
+            // EXPANDED DETAILS
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Format the raw ISO date into something into readeable text
+                val rawDate = item.date ?: ""
+                val cleanDate = if (rawDate.length >= 16) {
+                    val datePart = rawDate.substring(0, 10)
+                    val timePart = rawDate.substring(11, 16)
+                    "$datePart at $timePart"
+                } else {
+                    "Date unavailable"
+                }
+
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Transaction Audit Logs",
+                        text = "Receipt Details",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Operation Reference: #${item.id}", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "Timestamp: ${item.date?.take(16) ?: "Unknown"}", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "Collection Point ID: GreenPoint #${item.green_point_id}", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "Operational Status: Verified by AWS Cloud Services", style = MaterialTheme.typography.bodySmall)
+
+                    Text(text = "Where: ${item.location}", style = MaterialTheme.typography.bodySmall)
+                    Text(text = "When: $cleanDate", style = MaterialTheme.typography.bodySmall)
+                    Text(text = "Ticket ID: #${item.id}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                 }
             }
         }
