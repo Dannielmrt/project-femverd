@@ -20,7 +20,9 @@ interface ApiService {
     suspend fun getMe(@Header("Authorization") token: String): Response<UserMe>
 
     @GET("auth/me/history")
-    suspend fun getHistory(@Header("Authorization") token: String): Response<List<HistoryItem>>
+    suspend fun getHistory(
+        @Header("Authorization") token: String
+    ): retrofit2.Response<List<com.example.femverd.model.HistoryItem>>
 
     @GET("auth/me/rewards")
     suspend fun getMyRewards(@Header("Authorization") token: String): Response<List<RedemptionItem>>

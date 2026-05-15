@@ -19,8 +19,8 @@ data class HistoryItem(
     val date: String,
     val quantity: Double,
     val generated_points: Double,
-    val material_id: Int,
-    val green_point_id: Int
+    val material_name: String,
+    val location: String
 )
 
 // Model for the rewards already redeemed
