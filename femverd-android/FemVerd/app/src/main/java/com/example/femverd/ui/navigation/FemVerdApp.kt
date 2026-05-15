@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
+import com.example.femverd.ui.screens.home.HomeScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,7 +79,9 @@ fun FemVerdApp() {
             bottomBar = {
                 // The bottom bar is only displayed if we are in Home, History or Map.
                 if (bottomNavItems.any { it.route == actualRoute }) {
-                    NavigationBar {
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ) {
                         bottomNavItems.forEach { item ->
                             NavigationBarItem(
                                 icon = { Icon(item.icon, contentDescription = item.title) },
@@ -91,7 +94,14 @@ fun FemVerdApp() {
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                }
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
                         }
                     }
@@ -114,13 +124,15 @@ fun FemVerdApp() {
                         }
                     )
                 }
-                composable(BottomNavItem.Home.route) { Text("Pantalla de Inicio", Modifier.padding(16.dp)) }
-                composable(BottomNavItem.History.route) { Text("Pantalla de Historial", Modifier.padding(16.dp)) }
-                composable(BottomNavItem.Map.route) { Text("Pantalla del Mapa", Modifier.padding(16.dp)) }
+                composable(BottomNavItem.Home.route) {
+                    HomeScreen()
+                }
+                composable(BottomNavItem.History.route) { Text("History Screen", Modifier.padding(16.dp)) }
+                composable(BottomNavItem.Map.route) { Text("Map Screen", Modifier.padding(16.dp)) }
 
-                composable(DrawerItem.Profile.route) { Text("Pantalla de Perfil", Modifier.padding(16.dp)) }
-                composable(DrawerItem.Certificate.route) { Text("Pantalla de Certificado", Modifier.padding(16.dp)) }
-                composable(DrawerItem.Help.route) { Text("Pantalla de Ayuda", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Profile.route) { Text("Profile Screen", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Certificate.route) { Text("Certificate Screen", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Help.route) { Text("Help Screen", Modifier.padding(16.dp)) }
                 /*
                 composable(BottomNavItem.Home.route) {
                     // HomeScreen.kt
