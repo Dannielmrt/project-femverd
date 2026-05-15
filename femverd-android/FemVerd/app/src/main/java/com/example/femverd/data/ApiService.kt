@@ -39,4 +39,10 @@ interface ApiService {
 
     @DELETE("auth/me")
     suspend fun deleteAccount(@Header("Authorization") token: String): Response<Unit>
+
+    @GET("auth/me/certificate")
+    suspend fun getAnnualCertificate(
+        @Header("Authorization") token: String,
+        @Query("year") year: Int
+    ): retrofit2.Response<com.example.femverd.model.CertificateResponse>
 }
