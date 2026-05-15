@@ -24,9 +24,13 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import android.util.Base64
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: HomeViewModel = viewModel()
+) {
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
     val uiState by viewModel.uiState.collectAsState()
@@ -47,7 +51,7 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
                 }
             }
             is HomeUiState.Success -> {
-                DashboardContent(state.user)
+                DashboardContent(state.user, navController)
             }
             is HomeUiState.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -59,7 +63,10 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
 }
 
 @Composable
-fun DashboardContent(user: com.example.femverd.model.UserMe) {
+fun DashboardContent(
+    user: com.example.femverd.model.UserMe,
+    navController: NavController
+) {
     var showQrDialog by rememberSaveable { mutableStateOf(false) }
 
     val level = (user.current_points / 500).toInt() + 1
@@ -150,7 +157,7 @@ fun DashboardContent(user: com.example.femverd.model.UserMe) {
 
         // REWARDS BUTTON
         FilledTonalButton(
-            onClick = { /* Navegar a RewardsScreen */ },
+            onClick = { navController.navigate("rewards") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)

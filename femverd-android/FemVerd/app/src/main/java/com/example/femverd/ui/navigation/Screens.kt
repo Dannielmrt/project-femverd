@@ -18,3 +18,5 @@ sealed class DrawerItem(val route: String, val title: String, val icon: ImageVec
     object Certificate : DrawerItem("certificate", "Tax Certificate", Icons.Default.Description)
     object Help : DrawerItem("help", "Help", Icons.Default.Help)
 }
+
+object Rewards : BottomNavItem("rewards", "Rewards", Icons.Default.CardGiftcard)
