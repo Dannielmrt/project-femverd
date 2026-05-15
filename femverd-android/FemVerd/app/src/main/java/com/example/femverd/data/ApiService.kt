@@ -30,4 +30,7 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: RedeemRequest
     ): Response<Unit> // Only imports if 200 OK
+
+    @DELETE("auth/me")
+    suspend fun deleteAccount(@Header("Authorization") token: String): Response<Unit>
 }

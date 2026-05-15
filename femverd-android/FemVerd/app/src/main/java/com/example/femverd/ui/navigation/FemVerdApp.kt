@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
 import com.example.femverd.ui.screens.home.HomeScreen
+import com.example.femverd.ui.screens.profile.ProfileScreen
 import com.example.femverd.ui.screens.rewards.RewardsScreen
 import kotlinx.coroutines.launch
 
@@ -132,7 +133,9 @@ fun FemVerdApp() {
                 composable(BottomNavItem.History.route) { Text("History Screen", Modifier.padding(16.dp)) }
                 composable(BottomNavItem.Map.route) { Text("Map Screen", Modifier.padding(16.dp)) }
 
-                composable(DrawerItem.Profile.route) { Text("Profile Screen", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Profile.route) {
+                    ProfileScreen(navController = navController)
+                }
                 composable(DrawerItem.Certificate.route) { Text("Certificate Screen", Modifier.padding(16.dp)) }
                 composable(DrawerItem.Help.route) { Text("Help Screen", Modifier.padding(16.dp)) }
             }
