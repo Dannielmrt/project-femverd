@@ -3,12 +3,15 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import Optional
+from pydantic import BaseModel
 import bcrypt
+import uuid
 
 from app.database import get_db
 from app.models.user import User
 from app.models.action import Action
 from app.models.material_rule import MaterialRule
+from app.models.redemption import Redemption
 from app.services.security_service import hash_dni
 from app.services.auth_service import create_access_token
 from app.auth.security import get_current_user_token
@@ -164,3 +167,74 @@ def get_annual_certificate(
             for k, v in materials_summary.items()
         ]
     }
+
+class RewardRedeemRequest(BaseModel):
+    reward_name: str
+    cost: float
+
+@router.post("/me/rewards/redeem")
+def redeem_reward(
+    request: RewardRedeemRequest,
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Exchange points (from ponits_balance) for reward that generates a unique code to redeem
+    """
+    search_hash = hash_dni(user_dni)
+    user = db.query(User).filter(User.dni_hash == search_hash).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.points_balance < request.cost:
+        raise HTTPException(status_code=400, detail="Insufficient points balance")
+
+    # subtract points from points_balance
+    user.points_balance -= request.cost
+
+    # Generate a code like "FEM-A1B2C"
+    unique_code = f"FEM-{str(uuid.uuid4())[:5].upper()}"
+
+    new_redemption = Redemption(
+        user_id=user.id,
+        reward_name=request.reward_name,
+        points_cost=request.cost,
+        claim_code=unique_code
+    )
+    
+    db.add(new_redemption)
+    db.commit()
+
+    return {
+        "message": "Reward redeemed successfully",
+        "reward_name": request.reward_name,
+        "claim_code": unique_code,
+        "remaining_points": user.points_balance
+    }
+
+@router.get("/me/rewards")
+def get_user_rewards(
+    user_dni: str = Depends(get_current_user_token),
+    db: Session = Depends(get_db)
+):
+    """
+    Return the wallet of codes redeemed by the user
+    """
+    search_hash = hash_dni(user_dni)
+    user = db.query(User).filter(User.dni_hash == search_hash).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    redemptions = db.query(Redemption).filter(Redemption.user_id == user.id).order_by(Redemption.created_at.desc()).all()
+
+    return [
+        {
+            "id": r.id,
+            "reward_name": r.reward_name,
+            "cost": r.points_cost,
+            "code": r.claim_code,
+            "date": r.created_at.isoformat() if r.created_at else None
+        } for r in redemptions
+    ]

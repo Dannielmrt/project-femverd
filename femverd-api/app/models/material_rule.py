@@ -8,4 +8,4 @@ class MaterialRule(Base):
     id = Column(Integer, primary_key=True, index=True)
     material_name = Column(String, unique=True, index=True, nullable=False)  # "plastic"
     points_per_unit = Column(Float, nullable=False)                          # 15.0
-    unit_type = Column(String, nullable=False)                               # "kg" or "ud"
+    unit_type = Column(String, nullable=False)                               # "kg", "ud", etc.
