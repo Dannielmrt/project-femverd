@@ -11,5 +11,6 @@ class User(Base):
     email = Column(String, unique=True, index=True)  
     user_name = Column(String)
     points_balance = Column(Float, default=0.0)
+    total_accumulated_points = Column(Float, default=0.0)
     hashed_password = Column(String)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

@@ -50,7 +50,8 @@ def read_users_me(user_dni: str = Depends(get_current_user_token), db: Session =
     return {
         "dni": user_dni,
         "name": user.user_name,
-        "current_points": user.points_balance
+        "current_points": user.points_balance,
+        "total_points": user.total_accumulated_points
     }
 
 @router.delete("/me")

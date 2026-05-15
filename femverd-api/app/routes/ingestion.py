@@ -43,9 +43,10 @@ def process_event_in_background(user_id: int, rule_id: int, green_point_id: int,
         points_earned = points_service.calculate_points(rule.points_per_unit, quantity)
         
         # Atomic points update to prevent race conditions
-        db.query(User).filter(User.id == user_id).update(
-            {"points_balance": User.points_balance + points_earned}
-        )
+        db.query(User).filter(User.id == user_id).update({
+            "points_balance": User.points_balance + points_earned,
+            "total_accumulated_points": User.total_accumulated_points + points_earned
+        })
 
         # Save Action using user_id instead of encrypting the DNI again
         new_action = Action(
