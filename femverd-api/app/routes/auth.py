@@ -18,6 +18,10 @@ from app.auth.security import get_current_user_token
 
 router = APIRouter(prefix="/auth", tags=["Mobile App Authentication"])
 
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+
 @router.post("/login")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
@@ -53,9 +57,27 @@ def read_users_me(user_dni: str = Depends(get_current_user_token), db: Session =
     return {
         "dni": user_dni,
         "name": user.user_name,
+        "email": user.email,
         "current_points": user.points_balance,
         "total_points": user.total_accumulated_points
     }
+
+@router.put("/me")
+def update_user_profile(
+    update_data: UserUpdate,
+    user_dni: str = Depends(get_current_user_token), 
+    db: Session = Depends(get_db)
+):
+    """ Updates user's name or email """
+    search_hash = hash_dni(user_dni)
+    user = db.query(User).filter(User.dni_hash == search_hash).first()
+    if not user: raise HTTPException(status_code=404, detail="User not found")
+
+    if update_data.full_name: user.full_name = update_data.full_name
+    if update_data.email: user.email = update_data.email
+
+    db.commit()
+    return {"message": "Profile updated successfully"}
 
 @router.delete("/me")
 def delete_user_account(user_dni: str = Depends(get_current_user_token), db: Session = Depends(get_db)):
@@ -68,8 +90,9 @@ def delete_user_account(user_dni: str = Depends(get_current_user_token), db: Ses
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Cascade Delete using SQL directly 
+    # Cascade Delete, delete all related records first
     db.query(Action).filter(Action.user_id == user.id).delete()
+    db.query(Redemption).filter(Redemption.user_id == user.id).delete()
     
     db.delete(user)
     db.commit()
@@ -238,3 +261,4 @@ def get_user_rewards(
             "date": r.created_at.isoformat() if r.created_at else None
         } for r in redemptions
     ]
+
