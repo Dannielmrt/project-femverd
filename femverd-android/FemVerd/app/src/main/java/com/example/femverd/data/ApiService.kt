@@ -31,6 +31,12 @@ interface ApiService {
         @Body request: RedeemRequest
     ): Response<Unit> // Only imports if 200 OK
 
+    @PUT("auth/me")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body request: com.example.femverd.model.UserUpdateRequest
+    ): retrofit2.Response<Unit>
+
     @DELETE("auth/me")
     suspend fun deleteAccount(@Header("Authorization") token: String): Response<Unit>
 }

@@ -1,10 +1,15 @@
 package com.example.femverd.ui.screens.profile
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.femverd.data.TokenManager
 
+@OptIn(ExperimentalMaterial3Api::class) // Required for TopAppBar
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -25,95 +31,176 @@ fun ProfileScreen(
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
 
+    // UI States
     val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
+    val userProfile by viewModel.userProfile.collectAsState()
 
-    // State to show the critical confirmation dialog
+    // Dialog and Editing states
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var isEditing by rememberSaveable { mutableStateOf(false) }
 
-    // Navigation callback to return to Login securely
+    // Text field states
+    var userNameField by rememberSaveable { mutableStateOf("") }
+    var emailField by rememberSaveable { mutableStateOf("") }
+
+    // Fetch profile data on initialization
+    LaunchedEffect(Unit) {
+        tokenManager.getToken()?.let { viewModel.fetchProfile(it) }
+    }
+
+    // Populate fields when profile data arrives
+    LaunchedEffect(userProfile) {
+        userProfile?.let {
+            userNameField = it.name
+            emailField = it.email ?: ""
+        }
+    }
+
+    // Navigation logic to clear backstack and return to login
     val navigateToLogin = {
         navController.navigate("login") {
-            // Clears the entire backstack so the user can't press "Back" to return to the app
             popUpTo(navController.graph.startDestinationId) { inclusive = true }
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Profile Icon placeholder
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = "Profile Avatar",
-            modifier = Modifier.size(100.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "My Profile",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // Normal Logout Button
-        OutlinedButton(
-            onClick = { viewModel.performLogout(tokenManager, onSuccess = navigateToLogin) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.large
-        ) {
-            Icon(Icons.Default.Logout, contentDescription = null)
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("LOG OUT")
+    // Scaffold provides the TopAppBar for back navigation
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("My Profile") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Danger Zone: Delete Account
-        Button(
-            onClick = { showDeleteDialog = true },
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.large,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            ),
-            enabled = !isLoading
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onError, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Avatar Placeholder
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile Avatar",
+                modifier = Modifier.size(100.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (userProfile == null) {
+                CircularProgressIndicator()
             } else {
-                Icon(Icons.Default.DeleteForever, contentDescription = null)
+                // DNI Field: Always Read-Only for legibility
+                OutlinedTextField(
+                    value = userProfile!!.dni,
+                    onValueChange = {},
+                    label = { Text("DNI / Eco-ID") },
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // User Name Field: Uses readOnly to maintain text contrast when disabled
+                OutlinedTextField(
+                    value = userNameField,
+                    onValueChange = { userNameField = it },
+                    label = { Text("User Name") },
+                    readOnly = !isEditing,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Email Field
+                OutlinedTextField(
+                    value = emailField,
+                    onValueChange = { emailField = it },
+                    label = { Text("Email Address") },
+                    readOnly = !isEditing,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Toggle between Save and Edit states
+                if (isEditing) {
+                    Button(
+                        onClick = {
+                            tokenManager.getToken()?.let {
+                                viewModel.updateProfile(it, userNameField, emailField) {
+                                    isEditing = false // Exit edit mode on success
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Icon(Icons.Default.Save, contentDescription = "Save Icon")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("SAVE CHANGES")
+                    }
+                } else {
+                    FilledTonalButton(
+                        onClick = { isEditing = true },
+                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Icon")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("EDIT PROFILE")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Session Management Actions
+            OutlinedButton(
+                onClick = { viewModel.performLogout(tokenManager, onSuccess = navigateToLogin) },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Icon(Icons.Default.Logout, contentDescription = "Logout Icon")
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("LOG OUT")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { showDeleteDialog = true },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Icon(Icons.Default.DeleteForever, contentDescription = "Delete Icon")
                 Spacer(modifier = Modifier.width(12.dp))
                 Text("DELETE ACCOUNT")
             }
-        }
-
-        if (errorMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
-    // Confirmation Dialog to prevent accidental deletions
+    // Critical Action Confirmation Dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("Are you absolutely sure?") },
-            text = { Text("This action cannot be undone. All your recycling history and points will be permanently deleted from our servers.") },
+            text = { Text("This action cannot be undone. All your recycling history and points will be permanently deleted.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -122,13 +209,11 @@ fun ProfileScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("YES, DELETE EVERYTHING")
+                    Text("YES, DELETE")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("CANCEL")
-                }
+                TextButton(onClick = { showDeleteDialog = false }) { Text("CANCEL") }
             }
         )
     }
