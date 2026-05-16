@@ -7,12 +7,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.femverd.R
 import com.example.femverd.ui.screens.auth.LoginScreen
 import com.example.femverd.ui.screens.auth.RegisterScreen
 import com.example.femverd.ui.screens.certificate.CertificateScreen
@@ -32,10 +34,8 @@ fun FemVerdApp() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // rememberSaveable saves the current path so that it survives screen rotation
     var currentRoute by rememberSaveable { mutableStateOf(BottomNavItem.Home.route) }
 
-    // The actual navigation status is monitored for synchronization
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val actualRoute = navBackStackEntry?.destination?.route ?: currentRoute
 
@@ -54,33 +54,39 @@ fun FemVerdApp() {
         DrawerItem.Help
     )
 
-    // NavigationDrawer
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = isDrawerEnabled,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
-                    text = "FemVerd",
+                    text = stringResource(id = R.string.app_name),
                     style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
                 )
-                Divider()
-                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_small)))
 
                 drawerItems.forEach { item ->
                     NavigationDrawerItem(
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title) },
+                        icon = {
+                            Icon(
+                                item.icon,
+                                contentDescription = stringResource(id = item.titleResId)
+                            )
+                        },
+                        label = { Text(stringResource(id = item.titleResId)) },
                         selected = actualRoute == item.route,
                         onClick = {
                             currentRoute = item.route
                             navController.navigate(item.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
-                            scope.launch { drawerState.close() } // Close the menu onClick
+                            scope.launch { drawerState.close() }
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
@@ -88,23 +94,28 @@ fun FemVerdApp() {
             }
         }
     ) {
-        // Scaffold
         Scaffold(
             bottomBar = {
-                // The bottom bar is only displayed if we are in Home, History or Map.
                 if (bottomNavItems.any { it.route == actualRoute }) {
                     NavigationBar(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                     ) {
                         bottomNavItems.forEach { item ->
                             NavigationBarItem(
-                                icon = { Icon(item.icon, contentDescription = item.title) },
-                                label = { Text(item.title) },
+                                icon = {
+                                    Icon(
+                                        item.icon,
+                                        contentDescription = stringResource(id = item.titleResId)
+                                    )
+                                },
+                                label = { Text(stringResource(id = item.titleResId)) },
                                 selected = actualRoute == item.route,
                                 onClick = {
                                     currentRoute = item.route
                                     navController.navigate(item.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
                                         launchSingleTop = true
                                         restoreState = true
                                     }
@@ -122,8 +133,6 @@ fun FemVerdApp() {
                 }
             }
         ) { innerPadding ->
-
-            // NavHost
             NavHost(
                 navController = navController,
                 startDestination = "splash",
@@ -155,29 +164,24 @@ fun FemVerdApp() {
                         }
                     )
                 }
-
                 composable("register") {
                     RegisterScreen(
-                        onRegisterSuccess = {
-                            navController.popBackStack()
-                        },
-                        onNavigateBack = {
-                            navController.popBackStack()
-                        }
+                        onRegisterSuccess = { navController.popBackStack() },
+                        onNavigateBack = { navController.popBackStack() }
                     )
                 }
                 composable(BottomNavItem.Home.route) {
                     HomeScreen(navController)
                 }
-                composable("rewards") { RewardsScreen(navController) }
-
+                composable(Rewards.route) {
+                    RewardsScreen(navController)
+                }
                 composable(BottomNavItem.History.route) {
                     HistoryScreen()
                 }
                 composable(BottomNavItem.Map.route) {
                     MapScreen()
                 }
-
                 composable(DrawerItem.Profile.route) {
                     ProfileScreen(navController = navController)
                 }

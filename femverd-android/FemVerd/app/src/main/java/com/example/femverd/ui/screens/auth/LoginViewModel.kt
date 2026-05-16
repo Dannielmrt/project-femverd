@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
 
-    // UI States exposed to the screen
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -21,22 +20,16 @@ class LoginViewModel : ViewModel() {
     val loginSuccess: StateFlow<Boolean> = _loginSuccess
 
     fun login(dni: String, pass: String, tokenManager: TokenManager) {
-    /*
-      Executes the login request against the API in teh Docker cointainer
-      The API will then verify the user against the AWS PostgreSQL DB
-     */
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
 
             try {
-                // Call the API via Retrofit
                 val response = RetrofitClient.instance.login(dni, pass)
 
                 if (response.isSuccessful) {
                     val token = response.body()?.access_token
                     if (token != null) {
-                        // Store the JWT securely using SharedPreferences
                         tokenManager.saveToken(token)
                         _loginSuccess.value = true
                     } else {
@@ -46,7 +39,6 @@ class LoginViewModel : ViewModel() {
                     _errorMessage.value = "Error: Invalid credentials."
                 }
             } catch (e: Exception) {
-                // Catches network errors
                 _errorMessage.value = "Network error: ${e.localizedMessage}"
             } finally {
                 _isLoading.value = false

@@ -21,9 +21,6 @@ class CertificateViewModel : ViewModel() {
     val errorMessage: StateFlow<String?> = _errorMessage
 
     fun fetchCertificate(token: String, year: Int = Calendar.getInstance().get(Calendar.YEAR)) {
-        /*
-          Fetches the official recycling certificate for a specific year.
-         */
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null

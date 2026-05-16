@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
 
-    // UI States
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
@@ -23,9 +22,6 @@ class ProfileViewModel : ViewModel() {
     val userProfile: StateFlow<UserMe?> = _userProfile
 
     fun fetchProfile(token: String) {
-        /*
-          Retrieves the current user's profile data from the server.
-         */
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -41,20 +37,15 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-
     fun updateProfile(token: String, newUserName: String, newEmail: String, onSuccess: () -> Unit) {
-        /*
-          Updates the user's name and email on the server.
-         */
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // Strict use of user_name
                 val request = UserUpdateRequest(user_name = newUserName, email = newEmail)
                 val response = RetrofitClient.instance.updateProfile("Bearer $token", request)
 
                 if (response.isSuccessful) {
-                    fetchProfile(token) // Refresh local data after successful update
+                    fetchProfile(token)
                     onSuccess()
                 } else {
                     _errorMessage.value = "Failed to update profile."
@@ -68,9 +59,6 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun deleteAccount(tokenManager: TokenManager, onSuccess: () -> Unit) {
-    /*
-      Deletes the account and its associated data permanently.
-     */
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -87,11 +75,7 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-
     fun performLogout(tokenManager: TokenManager, onSuccess: () -> Unit) {
-        /*
-          Clears local session and redirects to Login.
-         */
         tokenManager.clearToken()
         onSuccess()
     }

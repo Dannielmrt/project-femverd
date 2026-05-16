@@ -10,53 +10,58 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.femverd.R
 import com.example.femverd.data.TokenManager
 
-@OptIn(ExperimentalMaterial3Api::class) // Required for TopAppBar usage
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RewardsScreen(
-    navController: NavController, // Injected NavController for back navigation
+    navController: NavController,
     viewModel: RewardsViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
 
-    // UI States observed from the ViewModel
     val myRewards by viewModel.myRewards.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
 
-    // State hosts for Snackbar and Tabs
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Catalog", "My Codes")
 
-    // Fetch user's codes when the screen is first composed
+    val tabs = listOf(
+        stringResource(id = R.string.tab_catalog),
+        stringResource(id = R.string.tab_my_codes)
+    )
+
     LaunchedEffect(Unit) {
         tokenManager.getToken()?.let { viewModel.fetchMyRewards(it) }
     }
 
-    // React to new Snackbar messages emitted by the ViewModel
+    // Snackbar
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
-            viewModel.clearSnackbar() // Clear immediately after showing
+            viewModel.clearSnackbar()
         }
     }
 
-    // Scaffold provides the structural layout for TopAppBar and Snackbar
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Rewards Store") },
+                title = { Text(stringResource(id = R.string.title_rewards)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Go back to Home")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.desc_back_home)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -70,7 +75,7 @@ fun RewardsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding) // Ensures content doesn't overlap the TopAppBar
+                .padding(innerPadding)
         ) {
             TabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->
@@ -82,12 +87,10 @@ fun RewardsScreen(
                 }
             }
 
-            // Display a loading bar when network requests are active
             if (isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
 
-            // Render the appropriate tab content
             when (selectedTab) {
                 0 -> CatalogTab(viewModel, tokenManager)
                 1 -> MyCodesTab(myRewards)
@@ -99,16 +102,16 @@ fun RewardsScreen(
 @Composable
 fun CatalogTab(viewModel: RewardsViewModel, tokenManager: TokenManager) {
     LazyColumn(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_medium))
     ) {
         items(viewModel.catalog) { reward ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen.card_elevation_low))
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -118,7 +121,10 @@ fun CatalogTab(viewModel: RewardsViewModel, tokenManager: TokenManager) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${reward.second.toInt()} pts",
+                            text = stringResource(
+                                id = R.string.format_pts_cost,
+                                reward.second.toInt()
+                            ),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -129,7 +135,7 @@ fun CatalogTab(viewModel: RewardsViewModel, tokenManager: TokenManager) {
                             }
                         }
                     ) {
-                        Text("REDEEM")
+                        Text(stringResource(id = R.string.action_redeem))
                     }
                 }
             }
@@ -141,16 +147,19 @@ fun CatalogTab(viewModel: RewardsViewModel, tokenManager: TokenManager) {
 fun MyCodesTab(rewards: List<com.example.femverd.model.RedemptionItem>) {
     if (rewards.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No codes yet. Start recycling to earn points!", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = stringResource(id = R.string.msg_empty_codes),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     } else {
         LazyColumn(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_medium))
         ) {
             items(rewards) { item ->
                 OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))) {
                         Text(
                             text = item.reward_name,
                             fontWeight = FontWeight.Bold
@@ -159,11 +168,14 @@ fun MyCodesTab(rewards: List<com.example.femverd.model.RedemptionItem>) {
                             text = item.code,
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.primary,
-                            letterSpacing = 2.sp,
-                            modifier = Modifier.padding(vertical = 4.dp)
+                            letterSpacing = dimensionResource(id = R.dimen.letter_spacing_code).value.sp,
+                            modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.spacing_micro))
                         )
                         Text(
-                            text = "Redeemed on: ${item.date.take(10)}",
+                            text = stringResource(
+                                id = R.string.format_redeemed_on,
+                                item.date.take(10)
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

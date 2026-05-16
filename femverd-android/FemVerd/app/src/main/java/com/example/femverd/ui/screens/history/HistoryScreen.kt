@@ -18,9 +18,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.femverd.R
 import com.example.femverd.data.TokenManager
 import com.example.femverd.model.HistoryItem
 
@@ -30,7 +32,6 @@ fun HistoryScreen(viewModel: HistoryViewModel = viewModel()) {
     val tokenManager = remember { TokenManager(context) }
     val uiState by viewModel.uiState.collectAsState()
 
-    // Automatically trigger data fetch when screen renders
     LaunchedEffect(Unit) {
         tokenManager.getToken()?.let { viewModel.fetchHistory(it) }
     }
@@ -38,38 +39,39 @@ fun HistoryScreen(viewModel: HistoryViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(dimensionResource(id = R.dimen.padding_medium))
     ) {
         Text(
-            text = "Recycling History",
+            text = stringResource(id = R.string.title_history),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium))
         )
 
-        // Reactive UI state machine evaluation
         when (val state = uiState) {
             is HistoryUiState.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
+
             is HistoryUiState.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = state.message, color = MaterialTheme.colorScheme.error)
                 }
             }
+
             is HistoryUiState.Success -> {
                 if (state.historyList.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "No records yet. Start saving the planet!",
+                            text = stringResource(id = R.string.msg_empty_history),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_medium))
                     ) {
                         items(state.historyList) { item ->
                             ExpandableHistoryCard(item)
@@ -101,12 +103,16 @@ fun ExpandableHistoryCard(item: HistoryItem) {
                 )
             ),
         colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (expanded) 8.dp else 2.dp)
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (expanded) dimensionResource(id = R.dimen.card_elevation_high) else dimensionResource(
+                id = R.dimen.card_elevation_low
+            )
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(dimensionResource(id = R.dimen.padding_medium))
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -119,20 +125,19 @@ fun ExpandableHistoryCard(item: HistoryItem) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Recycling,
-                        contentDescription = "Recycling Icon",
+                        contentDescription = stringResource(id = R.string.desc_recycling_icon),
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.padding_medium)))
                     Column {
-                        // Show the actual Material Name
                         Text(
                             text = item.material_name,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${item.quantity} kg recycled",
+                            text = stringResource(id = R.string.format_kg_recycled, item.quantity),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -141,47 +146,58 @@ fun ExpandableHistoryCard(item: HistoryItem) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "+${String.format("%.1f", item.generated_points)} pts",
+                        text = stringResource(
+                            id = R.string.format_points_earned,
+                            String.format("%.1f", item.generated_points)
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Black
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_small)))
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Toggle Details",
+                        contentDescription = stringResource(id = R.string.desc_toggle_details),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            // EXPANDED DETAILS
             if (expanded) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 
-                // Format the raw ISO date into something into readeable text
                 val rawDate = item.date ?: ""
                 val cleanDate = if (rawDate.length >= 16) {
                     val datePart = rawDate.substring(0, 10)
                     val timePart = rawDate.substring(11, 16)
                     "$datePart at $timePart"
                 } else {
-                    "Date unavailable"
+                    stringResource(id = R.string.msg_date_unavailable)
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Receipt Details",
+                        text = stringResource(id = R.string.title_receipt_details),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_small)))
 
-                    Text(text = "Where: ${item.location}", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "When: $cleanDate", style = MaterialTheme.typography.bodySmall)
-                    Text(text = "Ticket ID: #${item.id}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                    Text(
+                        text = stringResource(id = R.string.format_where, item.location),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = stringResource(id = R.string.format_when, cleanDate),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = stringResource(id = R.string.format_ticket_id, item.id),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
                 }
             }
         }

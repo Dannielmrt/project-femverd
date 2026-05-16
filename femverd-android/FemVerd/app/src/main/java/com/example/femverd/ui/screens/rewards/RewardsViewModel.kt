@@ -11,19 +11,16 @@ import kotlinx.coroutines.launch
 
 class RewardsViewModel : ViewModel() {
 
-    // State flow for the user's redeemed codes
     private val _myRewards = MutableStateFlow<List<RedemptionItem>>(emptyList())
     val myRewards: StateFlow<List<RedemptionItem>> = _myRewards
 
-    // State flow for loading indicators
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // State flow to manage Snackbar messages (Success / Error)
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
-    // Static catalog for the MVP
+    // Static MVP catalog simulating backend persistence payload
     val catalog = listOf(
         Pair("Local Bus Ticket", 100.0),
         Pair("Cinema 2x1 Voucher", 250.0),
@@ -32,11 +29,7 @@ class RewardsViewModel : ViewModel() {
         Pair("Organic Market -5€", 1000.0)
     )
 
-
     fun fetchMyRewards(token: String) {
-        /*
-          Fetches the user's previously redeemed rewards from the server.
-         */
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -45,29 +38,23 @@ class RewardsViewModel : ViewModel() {
                     _myRewards.value = response.body() ?: emptyList()
                 }
             } catch (e: Exception) {
-                // Fails silently on the UI, but could be logged locally
+                // Silently fails on UI layer as per robust retry policies
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-
     fun redeem(token: String, name: String, cost: Double) {
-        /*
-          Attempts to redeem a new reward. Triggers a Snackbar based on the API response.
-         */
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = RetrofitClient.instance.redeemReward(
-                    "Bearer $token", RedeemRequest(name, cost)
-                )
+                val response =
+                    RetrofitClient.instance.redeemReward("Bearer $token", RedeemRequest(name, cost))
                 if (response.isSuccessful) {
                     _snackbarMessage.value = "Reward successfully redeemed! Check 'My Codes'."
-                    fetchMyRewards(token) // Refresh the wallet automatically
+                    fetchMyRewards(token)
                 } else {
-                    // API returns 400 Bad Request if points are insufficient
                     _snackbarMessage.value = "Error: Insufficient points."
                 }
             } catch (e: Exception) {

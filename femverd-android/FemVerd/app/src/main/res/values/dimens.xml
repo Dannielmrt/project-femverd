@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_small">8.dp</dimen>
+    <dimen name="padding_medium">16.dp</dimen>
+    <dimen name="padding_large">24.dp</dimen>
+    <dimen name="padding_extra_large">32.dp</dimen>
+    <dimen name="padding_huge">48.dp</dimen>
+
+    <dimen name="button_height">50.dp</dimen>
+    <dimen name="icon_size">24.dp</dimen>
+
+    <dimen name="spacing_small">8.dp</dimen>
+    <dimen name="spacing_medium">12.dp</dimen>
+    <dimen name="button_height_large">56.dp</dimen>
+
+    <dimen name="icon_size_large">32.dp</dimen>
+    <dimen name="icon_size_huge">48.dp</dimen>
+    <dimen name="card_elevation_low">2.dp</dimen>
+    <dimen name="card_elevation_medium">6.dp</dimen>
+    <dimen name="card_elevation_high">8.dp</dimen>
+    <dimen name="spacing_micro">4.dp</dimen>
+
+    <dimen name="button_height_huge">64.dp</dimen>
+    <dimen name="qr_size">200.dp</dimen>
+    <dimen name="map_bottom_padding">80.dp</dimen>
+    <dimen name="progress_bar_height">8.dp</dimen>
+    <dimen name="text_size_button">16.sp</dimen>
+
+    <dimen name="avatar_size">100.dp</dimen>
+    <dimen name="letter_spacing_code">2.sp</dimen>
+</resources>

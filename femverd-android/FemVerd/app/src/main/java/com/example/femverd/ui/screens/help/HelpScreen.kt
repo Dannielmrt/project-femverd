@@ -17,40 +17,33 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.femverd.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpScreen(navController: NavController) {
-    // Static list of Frequently Asked Questions
+
     val faqs = listOf(
-        Pair(
-            "How do I earn Eco-Points?",
-            "You earn points every time you recycle at an official GreenPoint. Just tap the 'Identify at Ecopark' button on the Home screen and scan your QR code at the machine."
-        ),
-        Pair(
-            "How can I redeem my rewards?",
-            "Navigate to the Home screen and tap 'Redeem Rewards'. You can exchange your accumulated points for bus tickets, local discounts, and other eco-friendly rewards."
-        ),
-        Pair(
-            "Is the Tax Certificate official?",
-            "Yes. The certificate generated in the app is digitally signed by the municipal backend and is completely valid for local environmental tax reduction claims."
-        ),
-        Pair(
-            "I forgot my password. What do I do?",
-            "For security reasons, password resets must be done in person. Please contact your local Ecopark administration with your physical DNI to reset your access credentials."
-        )
+        Pair(R.string.faq_q1, R.string.faq_a1),
+        Pair(R.string.faq_q2, R.string.faq_a2),
+        Pair(R.string.faq_q3, R.string.faq_a3),
+        Pair(R.string.faq_q4, R.string.faq_a4)
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Help & Support") },
+                title = { Text(stringResource(id = R.string.title_help)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.desc_go_back)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -68,40 +61,44 @@ fun HelpScreen(navController: NavController) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.spacing_medium))
             ) {
                 item {
                     Text(
-                        text = "Frequently Asked Questions",
+                        text = stringResource(id = R.string.title_faq),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium))
                     )
                 }
 
-                // Generate the expandable cards
                 items(faqs) { faq ->
-                    FaqCard(question = faq.first, answer = faq.second)
+                    FaqCard(
+                        question = stringResource(id = faq.first),
+                        answer = stringResource(id = faq.second)
+                    )
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_extra_large)))
 
-                    // Dummy support button
                     OutlinedButton(
-                        onClick = { /* open an email client or something (no)*/ },
+                        onClick = { },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .height(dimensionResource(id = R.dimen.button_height_large))
                     ) {
-                        Icon(Icons.Default.ContactSupport, contentDescription = "Support Icon")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("CONTACT LIVE SUPPORT")
+                        Icon(
+                            imageVector = Icons.Default.ContactSupport,
+                            contentDescription = stringResource(id = R.string.desc_support_icon)
+                        )
+                        Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_small)))
+                        Text(stringResource(id = R.string.action_contact_support))
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_extra_large)))
                 }
             }
         }
@@ -110,14 +107,13 @@ fun HelpScreen(navController: NavController) {
 
 @Composable
 fun FaqCard(question: String, answer: String) {
-    // State survives scrolling and rotation
     var expanded by rememberSaveable { mutableStateOf(false) }
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded }
-            .animateContentSize( // Smooth expansion animation
+            .animateContentSize(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
                     stiffness = Spring.StiffnessLow
@@ -130,7 +126,7 @@ fun FaqCard(question: String, answer: String) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(dimensionResource(id = R.dimen.padding_medium))
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -141,17 +137,17 @@ fun FaqCard(question: String, answer: String) {
                     text = question,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f) // Pushes the icon to the right
+                    modifier = Modifier.weight(1f)
                 )
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = "Toggle answer",
+                    contentDescription = stringResource(id = R.string.desc_toggle_answer),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
 
             if (expanded) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.spacing_medium)))
                 Text(
                     text = answer,
                     style = MaterialTheme.typography.bodyMedium,

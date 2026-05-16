@@ -16,13 +16,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.femverd.R
 import com.example.femverd.data.TokenManager
 
-@OptIn(ExperimentalMaterial3Api::class) // Required for TopAppBar
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -31,46 +32,44 @@ fun ProfileScreen(
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
 
-    // UI States
     val isLoading by viewModel.isLoading.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
 
-    // Dialog and Editing states
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var isEditing by rememberSaveable { mutableStateOf(false) }
 
-    // Text field states
     var userNameField by rememberSaveable { mutableStateOf("") }
     var emailField by rememberSaveable { mutableStateOf("") }
 
-    // Fetch profile data on initialization
+    // Binds data fetching to the initial composition lifecycle
     LaunchedEffect(Unit) {
         tokenManager.getToken()?.let { viewModel.fetchProfile(it) }
     }
 
-    // Populate fields when profile data arrives
     LaunchedEffect(userProfile) {
         userProfile?.let {
             userNameField = it.name
-            emailField = it.email ?: ""
+            emailField = it.email
         }
     }
 
-    // Navigation logic to clear backstack and return to login
+    // Clears the navigation backstack to prevent unauthorized return after session termination
     val navigateToLogin = {
         navController.navigate("login") {
             popUpTo(navController.graph.startDestinationId) { inclusive = true }
         }
     }
 
-    // Scaffold provides the TopAppBar for back navigation
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Profile") },
+                title = { Text(stringResource(id = R.string.title_profile)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Go back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.desc_go_back)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -85,122 +84,123 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = dimensionResource(id = R.dimen.padding_large)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 
-            // Avatar Placeholder
             Icon(
                 imageVector = Icons.Default.Person,
-                contentDescription = "Profile Avatar",
-                modifier = Modifier.size(100.dp),
+                contentDescription = stringResource(id = R.string.desc_avatar),
+                modifier = Modifier.size(dimensionResource(id = R.dimen.avatar_size)),
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_large)))
 
             if (userProfile == null) {
                 CircularProgressIndicator()
             } else {
-                // DNI Field: Always Read-Only for legibility
                 OutlinedTextField(
                     value = userProfile!!.dni,
                     onValueChange = {},
-                    label = { Text("DNI / Eco-ID") },
+                    label = { Text(stringResource(id = R.string.prompt_dni)) },
                     readOnly = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 
-                // User Name Field: Uses readOnly to maintain text contrast when disabled
                 OutlinedTextField(
                     value = userNameField,
                     onValueChange = { userNameField = it },
-                    label = { Text("User Name") },
+                    label = { Text(stringResource(id = R.string.prompt_user_name)) },
                     readOnly = !isEditing,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 
-                // Email Field
                 OutlinedTextField(
                     value = emailField,
                     onValueChange = { emailField = it },
-                    label = { Text("Email Address") },
+                    label = { Text(stringResource(id = R.string.prompt_email)) },
                     readOnly = !isEditing,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_large)))
 
-                // Toggle between Save and Edit states
                 if (isEditing) {
                     Button(
                         onClick = {
                             tokenManager.getToken()?.let {
                                 viewModel.updateProfile(it, userNameField, emailField) {
-                                    isEditing = false // Exit edit mode on success
+                                    isEditing = false
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(dimensionResource(id = R.dimen.button_height))
                     ) {
-                        Icon(Icons.Default.Save, contentDescription = "Save Icon")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("SAVE CHANGES")
+                        Icon(Icons.Default.Save, contentDescription = null)
+                        Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_small)))
+                        Text(stringResource(id = R.string.action_save_changes))
                     }
                 } else {
                     FilledTonalButton(
                         onClick = { isEditing = true },
-                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(dimensionResource(id = R.dimen.button_height))
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Icon")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("EDIT PROFILE")
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_small)))
+                        Text(stringResource(id = R.string.action_edit_profile))
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_huge)))
             HorizontalDivider()
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_huge)))
 
-            // Session Management Actions
             OutlinedButton(
                 onClick = { viewModel.performLogout(tokenManager, onSuccess = navigateToLogin) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dimensionResource(id = R.dimen.button_height_large)),
                 shape = MaterialTheme.shapes.large
             ) {
-                Icon(Icons.Default.Logout, contentDescription = "Logout Icon")
-                Spacer(modifier = Modifier.width(12.dp))
-                Text("LOG OUT")
+                Icon(Icons.Default.Logout, contentDescription = null)
+                Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_medium)))
+                Text(stringResource(id = R.string.action_logout))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_medium)))
 
             Button(
                 onClick = { showDeleteDialog = true },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(dimensionResource(id = R.dimen.button_height_large)),
                 shape = MaterialTheme.shapes.large,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) {
-                Icon(Icons.Default.DeleteForever, contentDescription = "Delete Icon")
-                Spacer(modifier = Modifier.width(12.dp))
-                Text("DELETE ACCOUNT")
+                Icon(Icons.Default.DeleteForever, contentDescription = null)
+                Spacer(modifier = Modifier.width(dimensionResource(id = R.dimen.spacing_medium)))
+                Text(stringResource(id = R.string.action_delete_account))
             }
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_extra_large)))
         }
     }
 
-    // Critical Action Confirmation Dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Are you absolutely sure?") },
-            text = { Text("This action cannot be undone. All your recycling history and points will be permanently deleted.") },
+            title = { Text(stringResource(id = R.string.dialog_delete_title)) },
+            text = { Text(stringResource(id = R.string.dialog_delete_body)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -209,11 +209,13 @@ fun ProfileScreen(
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("YES, DELETE")
+                    Text(stringResource(id = R.string.action_yes_delete))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("CANCEL") }
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(id = R.string.action_cancel))
+                }
             }
         )
     }

@@ -1,3 +1,136 @@
 <resources>
     <string name="app_name">FemVerd</string>
+    <string name="login_subtitle">Smart Recycling System</string>
+    <string name="prompt_dni">DNI / Eco-ID</string>
+    <string name="prompt_password">Password</string>
+    <string name="desc_toggle_password">Toggle password visibility</string>
+    <string name="action_login">LOG IN</string>
+    <string name="nav_to_register">Don\'t have an account? Sign up here</string>
+
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Join the green revolution</string>
+    <string name="prompt_fullname">Full Name</string>
+    <string name="prompt_email">Email Address</string>
+    <string name="action_register">SIGN UP</string>
+    <string name="nav_to_login">Already have an account? Log in</string>
+
+    <string name="error_invalid_dni">Invalid DNI format (e.g., 12345678A)</string>
+    <string name="error_short_name">Name must be at least 3 characters long</string>
+    <string name="error_invalid_email">Please enter a valid email address</string>
+    <string name="error_short_password">Password must be at least 6 characters long</string>
+    <string name="error_registration_conflict">Registration failed. DNI or Email might already exist.</string>
+    <string name="error_network">Network error. Please try again.</string>
+
+    <string name="desc_logo">FemVerd Official Logo</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_profile">My profile</string>
+    <string name="nav_certificate">Tax Certificate</string>
+    <string name="nav_help">Help</string>
+    <string name="nav_rewards">Rewards</string>
+
+    <string name="title_help">Help &amp; Support</string>
+    <string name="desc_go_back">Go back</string>
+    <string name="title_faq">Frequently Asked Questions</string>
+    <string name="action_contact_support">CONTACT LIVE SUPPORT</string>
+    <string name="desc_support_icon">Support Icon</string>
+    <string name="desc_toggle_answer">Toggle answer</string>
+
+    <string name="faq_q1">How do I earn Eco-Points?</string>
+    <string name="faq_a1">You earn points every time you recycle at an official GreenPoint. Just tap the \'Identify at Ecopark\' button on the Home screen and scan your QR code at the machine.</string>
+
+    <string name="faq_q2">How can I redeem my rewards?</string>
+    <string name="faq_a2">Navigate to the Home screen and tap \'Redeem Rewards\'. You can exchange your accumulated points for bus tickets, local discounts, and other eco-friendly rewards.</string>
+
+    <string name="faq_q3">Is the Tax Certificate official?</string>
+    <string name="faq_a3">Yes. The certificate generated in the app is digitally signed by the municipal backend and is completely valid for local environmental tax reduction claims.</string>
+
+    <string name="faq_q4">I forgot my password. What do I do?</string>
+    <string name="faq_a4">For security reasons, password resets must be done in person. Please contact your local Ecopark administration with your physical DNI to reset your access credentials.</string>
+
+    <string name="title_history">Recycling History</string>
+    <string name="msg_empty_history">No records yet. Start saving the planet!</string>
+    <string name="desc_recycling_icon">Recycling Icon</string>
+    <string name="format_kg_recycled">%1$s kg recycled</string>
+    <string name="format_points_earned">+%1$s pts</string>
+    <string name="desc_toggle_details">Toggle Details</string>
+    <string name="title_receipt_details">Receipt Details</string>
+    <string name="format_where">Where: %1$s</string>
+    <string name="format_when">When: %1$s</string>
+    <string name="format_ticket_id">Ticket ID: #%1$s</string>
+    <string name="msg_date_unavailable">Date unavailable</string>
+
+    <string name="title_certificate">Tax Certificate</string>
+    <string name="desc_download_pdf">Download PDF</string>
+    <string name="desc_official_seal">Official Seal</string>
+    <string name="label_official_record">OFFICIAL RECORD</string>
+    <string name="label_environmental_impact">Environmental Impact</string>
+    <string name="label_citizen_info">CITIZEN INFORMATION</string>
+    <string name="format_name">Name: %1$s</string>
+    <string name="format_dni">ID / DNI: %1$s</string>
+    <string name="format_fiscal_year">Fiscal Year: %1$s</string>
+    <string name="label_recycling_breakdown">RECYCLING BREAKDOWN</string>
+    <string name="msg_no_records_year">No recycling records found for this year.</string>
+    <string name="format_material_quantity">%1$s %2$s</string>
+    <string name="label_total_points">TOTAL POINTS GENERATED</string>
+    <string name="msg_certificate_validity">This document is digitally signed by the FemVerd system and is valid for local tax reduction purposes.</string>
+
+    <string name="pdf_title_l1">OFFICIAL ENVIRONMENTAL</string>
+    <string name="pdf_title_l2">IMPACT CERTIFICATE</string>
+    <string name="pdf_citizen">Citizen: %1$s</string>
+    <string name="pdf_dni">DNI: %1$s</string>
+    <string name="pdf_breakdown_header">----- RECYCLING BREAKDOWN -----</string>
+    <string name="pdf_total_points">TOTAL POINTS GENERATED: %1$s</string>
+    <string name="pdf_validity_l1">This document is digitally signed by the FemVerd system</string>
+    <string name="pdf_validity_l2">and is valid for local tax reduction purposes.</string>
+    <string name="pdf_filename">FemVerd_Certificate_%1$s.pdf</string>
+    <string name="msg_pdf_saved">PDF saved to Downloads!</string>
+    <string name="msg_pdf_error">Error generating PDF: %1$s</string>
+
+    <string name="home_welcome">Welcome back,</string>
+    <string name="home_balance_title">Your Current Balance</string>
+    <string name="format_pts_balance">%1$.2f pts</string>
+    <string name="format_level">Level %1$d</string>
+    <string name="format_pts_to_next">%1$d pts to Level %2$d</string>
+    <string name="action_redeem_rewards">REDEEM REWARDS</string>
+    <string name="action_identify_ecopark">IDENTIFY AT ECOPARK</string>
+    <string name="desc_rewards_icon">Rewards</string>
+    <string name="desc_qr_icon">QR Scanner Icon</string>
+    <string name="dialog_qr_title">Your Eco-ID</string>
+    <string name="dialog_qr_subtitle">Scan this code at the machine.</string>
+    <string name="desc_qr_code">QR Code with DNI</string>
+    <string name="error_qr_generation">Error generating QR</string>
+    <string name="action_close">CLOSE</string>
+
+    <string name="map_title">Ecopark Interactive Map</string>
+    <string name="map_subtitle">Real-time recycling nodes pulled securely from AWS cloud</string>
+    <string name="map_marker_snippet">Official FemVerd Collection Hub</string>
+
+    <string name="error_fetch_user">Could not fetch user data</string>
+    <string name="error_empty_markers">Server returned an empty markers payload.</string>
+    <string name="error_sync_map">Failed to synchronize map.</string>
+
+    <string name="title_profile">My Profile</string>
+    <string name="desc_avatar">Profile Avatar</string>
+    <string name="prompt_user_name">User Name</string>
+    <string name="action_save_changes">SAVE CHANGES</string>
+    <string name="action_edit_profile">EDIT PROFILE</string>
+    <string name="action_logout">LOG OUT</string>
+    <string name="action_delete_account">DELETE ACCOUNT</string>
+    <string name="dialog_delete_title">Are you absolutely sure?</string>
+    <string name="dialog_delete_body">This action cannot be undone. All your recycling history and points will be permanently deleted.</string>
+    <string name="action_yes_delete">YES, DELETE</string>
+    <string name="action_cancel">CANCEL</string>
+
+    <string name="title_rewards">Rewards Store</string>
+    <string name="desc_back_home">Go back to Home</string>
+    <string name="tab_catalog">Catalog</string>
+    <string name="tab_my_codes">My Codes</string>
+    <string name="msg_empty_codes">No codes yet. Start recycling to earn points!</string>
+    <string name="action_redeem">REDEEM</string>
+    <string name="format_pts_cost">%1$d pts</string>
+    <string name="format_redeemed_on">Redeemed on: %1$s</string>
+
 </resources>

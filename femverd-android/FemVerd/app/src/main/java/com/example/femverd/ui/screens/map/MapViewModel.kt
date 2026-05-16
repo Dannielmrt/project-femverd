@@ -19,10 +19,11 @@ class MapViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<MapUiState>(MapUiState.Loading)
     val uiState: StateFlow<MapUiState> = _uiState
 
-    fun fetchMarkers(token: String) {
     /*
-      Downloads real-time Ecopark spatial vectors from AWS database infrastructure.
+     * Dispatches an asynchronous network request to fetch the spatial coordinate nodes
+     * from the RESTful backend infrastructure.
      */
+    fun fetchMarkers(token: String) {
         viewModelScope.launch {
             _uiState.value = MapUiState.Loading
             try {
