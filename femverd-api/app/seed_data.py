@@ -28,23 +28,56 @@ def seed_database():
             db.add(provider)
             db.commit()
 
-        # Create a Green Point associated with the Provider
+        # Create Green Points associated with the Provider for the Map
         if not db.query(GreenPoint).first():
-            print("Seeding Green Points...")
-            ecopark = GreenPoint(
-                name="Ecoparque Principal Valencia",
-                latitude=39.4699,
-                longitude=-0.3763,
-                point_type="ecopark",
-                address="Av. dels Germans Machado, s/n", 
-                schedule="L-V: 09:00 - 20:00 | S-D: 10:00 - 14:00", 
-                accepted_materials="Plástico, Vidrio, Pilas, Aceite, Muebles", 
-                provider_id="ECO_VALENCIA_SUR" 
-            )
-            db.add(ecopark)
+            print("Seeding Green Points (Map Locations)...")
+            
+            ecoparks_data = [
+                {
+                    "name": "Central Station Ecopark",
+                    "latitude": 39.4699,
+                    "longitude": -0.3763,
+                    "address": "Plaza del Ayuntamiento, 1",
+                    "schedule": "L-V: 09:00 - 20:00 | S-D: 10:00 - 14:00"
+                },
+                {
+                    "name": "North University Campus Hub",
+                    "latitude": 39.4815,
+                    "longitude": -0.3472,
+                    "address": "Av. dels Tarongers, s/n",
+                    "schedule": "L-V: 08:00 - 18:00 | S: 09:00 - 13:00"
+                },
+                {
+                    "name": "South Port Recycling Point",
+                    "latitude": 39.4520,
+                    "longitude": -0.3315,
+                    "address": "Marina Real, Muelle 4",
+                    "schedule": "24/7"
+                },
+                {
+                    "name": "West Tech Park GreenPoint",
+                    "latitude": 39.4890,
+                    "longitude": -0.4120,
+                    "address": "Ronda Norte, 45",
+                    "schedule": "L-D: 08:00 - 22:00"
+                }
+            ]
+
+            for park in ecoparks_data:
+                ecopark = GreenPoint(
+                    name=park["name"],
+                    latitude=park["latitude"],
+                    longitude=park["longitude"],
+                    point_type="ecopark",
+                    address=park["address"], 
+                    schedule=park["schedule"], 
+                    accepted_materials="Plástico, Vidrio, Pilas, Aceite, Muebles", 
+                    provider_id="ECO_VALENCIA_SUR" 
+                )
+                db.add(ecopark)
             db.commit()
 
-        # Create the Material Rules (Business Logic)
+        # Create the Material Rules
         if not db.query(MaterialRule).first():
             print("Seeding Material Rules...")
             rules = [
