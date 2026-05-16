@@ -20,11 +20,11 @@ class LoginViewModel : ViewModel() {
     private val _loginSuccess = MutableStateFlow(false)
     val loginSuccess: StateFlow<Boolean> = _loginSuccess
 
-    /**
-     * Executes the login request against the API in teh Docker cointainer
-     * The API will then verify the user against the AWS PostgreSQL DB
-     */
     fun login(dni: String, pass: String, tokenManager: TokenManager) {
+    /*
+      Executes the login request against the API in teh Docker cointainer
+      The API will then verify the user against the AWS PostgreSQL DB
+     */
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null

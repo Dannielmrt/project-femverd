@@ -52,3 +52,10 @@ data class CertificateResponse(
     val total_points_generated: Double,
     val materials_breakdown: List<MaterialBreakdown>
 )
+
+data class RegisterRequest(
+    val dni: String,
+    val user_name: String,
+    val email: String,
+    val password: String
+)

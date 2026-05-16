@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
+import com.example.femverd.ui.screens.auth.RegisterScreen
 import com.example.femverd.ui.screens.certificate.CertificateScreen
 import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
@@ -128,6 +129,20 @@ fun FemVerdApp() {
                             navController.navigate(BottomNavItem.Home.route) {
                                 popUpTo("login") { inclusive = true }
                             }
+                        },
+                        onNavigateToRegister = {
+                            navController.navigate("register")
+                        }
+                    )
+                }
+
+                composable("register") {
+                    RegisterScreen(
+                        onRegisterSuccess = {
+                            navController.popBackStack()
+                        },
+                        onNavigateBack = {
+                            navController.popBackStack()
                         }
                     )
                 }

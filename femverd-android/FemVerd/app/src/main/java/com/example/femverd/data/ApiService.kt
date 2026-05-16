@@ -47,4 +47,9 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Query("year") year: Int
     ): retrofit2.Response<com.example.femverd.model.CertificateResponse>
+
+    @POST("users/")
+    suspend fun registerUser(
+        @Body request: com.example.femverd.model.RegisterRequest
+    ): retrofit2.Response<Unit>
 }
