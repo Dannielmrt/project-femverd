@@ -19,6 +19,7 @@ import com.example.femverd.ui.screens.certificate.CertificateScreen
 import com.example.femverd.ui.screens.help.HelpScreen
 import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
+import com.example.femverd.ui.screens.map.MapScreen
 import com.example.femverd.ui.screens.profile.ProfileScreen
 import com.example.femverd.ui.screens.rewards.RewardsScreen
 import com.example.femverd.ui.screens.splash.SplashScreen
@@ -38,7 +39,7 @@ fun FemVerdApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val actualRoute = navBackStackEntry?.destination?.route ?: currentRoute
 
-    val lockedDrawerRoutes = listOf("splash", "login", "register")
+    val lockedDrawerRoutes = listOf("splash", "login", "register", "map")
     val isDrawerEnabled = actualRoute !in lockedDrawerRoutes
 
     val bottomNavItems = listOf(
@@ -169,10 +170,13 @@ fun FemVerdApp() {
                     HomeScreen(navController)
                 }
                 composable("rewards") { RewardsScreen(navController) }
+
                 composable(BottomNavItem.History.route) {
                     HistoryScreen()
                 }
-                composable(BottomNavItem.Map.route) { Text("Map Screen", Modifier.padding(16.dp)) }
+                composable(BottomNavItem.Map.route) {
+                    MapScreen()
+                }
 
                 composable(DrawerItem.Profile.route) {
                     ProfileScreen(navController = navController)
