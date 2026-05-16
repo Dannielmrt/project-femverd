@@ -37,6 +37,9 @@ fun FemVerdApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val actualRoute = navBackStackEntry?.destination?.route ?: currentRoute
 
+    val lockedDrawerRoutes = listOf("splash", "login", "register")
+    val isDrawerEnabled = actualRoute !in lockedDrawerRoutes
+
     val bottomNavItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.History,
@@ -52,7 +55,7 @@ fun FemVerdApp() {
     // NavigationDrawer
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true,
+        gesturesEnabled = isDrawerEnabled,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
