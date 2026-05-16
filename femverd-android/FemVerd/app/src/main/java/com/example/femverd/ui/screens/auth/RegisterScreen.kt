@@ -36,21 +36,35 @@ fun RegisterScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val handleRegister: () -> Unit = {
-        coroutineScope.launch {
-            isLoading = true
-            errorMessage = null
-            try {
-                val request = RegisterRequest(dni, userName, email, password)
-                val response = RetrofitClient.instance.registerUser(request)
-                if (response.isSuccessful) {
-                    onRegisterSuccess() // Volver al login
-                } else {
-                    errorMessage = "Registration failed. DNI or Email might already exist."
+        val dniComprobation = "^[0-9]{8}[A-Za-z]$".toRegex() // exisistig native metode
+        val emailPattern = android.util.Patterns.EMAIL_ADDRESS
+
+        if (!dni.matches(dniComprobation)) {
+            errorMessage = "Invalid DNI format (e.g., 12345678A)"
+        } else if (userName.trim().length < 3) {
+            errorMessage = "Name must be at least 3 characters long"
+        } else if (!emailPattern.matcher(email).matches()) {
+            errorMessage = "Please enter a valid email address"
+        } else if (password.length < 6) {
+            errorMessage = "Password must be at least 6 characters long"
+        } else {
+            // If everything is ok, laucnh corroutine to the backend
+            coroutineScope.launch {
+                isLoading = true
+                errorMessage = null
+                try {
+                    val request = RegisterRequest(dni, userName, email, password)
+                    val response = RetrofitClient.instance.registerUser(request)
+                    if (response.isSuccessful) {
+                        onRegisterSuccess()
+                    } else {
+                        errorMessage = "Registration failed. DNI or Email might already exist."
+                    }
+                } catch (e: Exception) {
+                    errorMessage = "Network error. Please try again."
+                } finally {
+                    isLoading = false
                 }
-            } catch (e: Exception) {
-                errorMessage = "Network error. Please try again."
-            } finally {
-                isLoading = false
             }
         }
     }
