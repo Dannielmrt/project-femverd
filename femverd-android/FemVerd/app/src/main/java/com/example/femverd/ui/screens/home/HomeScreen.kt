@@ -23,6 +23,8 @@ import com.example.femverd.data.TokenManager
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import android.util.Base64
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.navigation.NavController
 
@@ -42,6 +44,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         when (val state = uiState) {
