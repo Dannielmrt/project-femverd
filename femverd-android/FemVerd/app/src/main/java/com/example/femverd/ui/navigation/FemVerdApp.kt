@@ -20,6 +20,7 @@ import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
 import com.example.femverd.ui.screens.profile.ProfileScreen
 import com.example.femverd.ui.screens.rewards.RewardsScreen
+import com.example.femverd.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -120,9 +121,23 @@ fun FemVerdApp() {
             // NavHost
             NavHost(
                 navController = navController,
-                startDestination = "login",
+                startDestination = "splash",
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable("splash") {
+                    SplashScreen(
+                        onNavigateToLogin = {
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        },
+                        onNavigateToHome = {
+                            navController.navigate(BottomNavItem.Home.route) {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 composable("login") {
                     LoginScreen(
                         onLoginSuccess = {
