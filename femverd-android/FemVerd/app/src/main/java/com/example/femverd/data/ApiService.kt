@@ -52,4 +52,9 @@ interface ApiService {
     suspend fun registerUser(
         @Body request: com.example.femverd.model.RegisterRequest
     ): retrofit2.Response<Unit>
+
+    @GET("auth/green-points")
+    suspend fun getGreenPoints(
+        @Header("Authorization") token: String
+    ): retrofit2.Response<List<com.example.femverd.model.GreenPointMarker>>
 }

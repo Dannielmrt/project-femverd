@@ -59,3 +59,10 @@ data class RegisterRequest(
     val email: String,
     val password: String
 )
+
+data class GreenPointMarker(
+    val id: Int,
+    val name: String,
+    val latitude: Double,
+    val longitude: Double
+)
