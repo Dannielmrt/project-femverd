@@ -1,5 +1,6 @@
 package com.example.femverd.ui.screens.rewards
 
+import android.media.MediaPlayer
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +36,8 @@ fun RewardsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var selectedTab by remember { mutableIntStateOf(0) }
 
+    val playSuccessSound by viewModel.playSuccessSound.collectAsState()
+
     val tabs = listOf(
         stringResource(id = R.string.tab_catalog),
         stringResource(id = R.string.tab_my_codes)
@@ -49,6 +52,20 @@ fun RewardsScreen(
         snackbarMessage?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearSnackbar()
+        }
+    }
+
+    // Sound MediaPlayer
+    LaunchedEffect(playSuccessSound) {
+        if (playSuccessSound) {
+            val mediaPlayer = MediaPlayer.create(context, R.raw.redeem)
+            mediaPlayer.start()
+
+            mediaPlayer.setOnCompletionListener { mp ->
+                mp.release()
+            }
+
+            viewModel.clearSound()
         }
     }
 

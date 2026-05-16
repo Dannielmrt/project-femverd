@@ -20,6 +20,9 @@ class RewardsViewModel : ViewModel() {
     private val _snackbarMessage = MutableStateFlow<String?>(null)
     val snackbarMessage: StateFlow<String?> = _snackbarMessage
 
+    private val _playSuccessSound = MutableStateFlow(false)
+    val playSuccessSound: StateFlow<Boolean> = _playSuccessSound
+
     // Static MVP catalog simulating backend persistence payload
     val catalog = listOf(
         Pair("Local Bus Ticket", 100.0),
@@ -53,6 +56,7 @@ class RewardsViewModel : ViewModel() {
                     RetrofitClient.instance.redeemReward("Bearer $token", RedeemRequest(name, cost))
                 if (response.isSuccessful) {
                     _snackbarMessage.value = "Reward successfully redeemed! Check 'My Codes'."
+                    _playSuccessSound.value = true
                     fetchMyRewards(token)
                 } else {
                     _snackbarMessage.value = "Error: Insufficient points."
@@ -67,5 +71,9 @@ class RewardsViewModel : ViewModel() {
 
     fun clearSnackbar() {
         _snackbarMessage.value = null
+    }
+
+    fun clearSound() {
+        _playSuccessSound.value = false
     }
 }
