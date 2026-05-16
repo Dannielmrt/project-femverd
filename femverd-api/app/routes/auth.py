@@ -1,4 +1,3 @@
-# app/routes/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -29,7 +28,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     Authenticates the mobile app user using the Blind Index pattern for the DNI
     and Bcrypt for the password. Returns an RSA-signed JWT.
     """
-    # Search user instantly via Blind Index (Hash)
+    # Search user instantly with Hash
     search_hash = hash_dni(form_data.username)
     user = db.query(User).filter(User.dni_hash == search_hash).first()
 
@@ -69,7 +68,9 @@ def update_user_profile(
     user_dni: str = Depends(get_current_user_token), 
     db: Session = Depends(get_db)
 ):
-    """ Updates user's name or email """
+    """ 
+    Updates user's name or email 
+    """
     search_hash = hash_dni(user_dni)
     user = db.query(User).filter(User.dni_hash == search_hash).first()
     if not user: raise HTTPException(status_code=404, detail="User not found")
@@ -132,7 +133,7 @@ def get_user_history(
     # Sort by newest and apply the result limit
     actions = query.order_by(Action.id.desc()).limit(limit).all()
 
-    # Build the user-friendly response list
+    # Build the user friendly response list
     history_result = []
     for a in actions:
         # Fetch the semantic names for each action
@@ -157,7 +158,7 @@ def get_annual_certificate(
     db: Session = Depends(get_db)
 ):
     """
-    Generates the aggregated data needed for the Official Environmental Impact Certificate.
+    Generates the aggregated data needed for the Official Environmental Impact Certificate
     """
     search_hash = hash_dni(user_dni)
     user = db.query(User).filter(User.dni_hash == search_hash).first()

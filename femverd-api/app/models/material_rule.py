@@ -1,4 +1,3 @@
-# app/models/material_rule.py
 from sqlalchemy import Column, Integer, String, Float
 from ..database import Base
 

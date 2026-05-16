@@ -5,8 +5,6 @@ WORKDIR /app
 
 RUN pip install cryptography
 
-# Copy the server script
 COPY server.py .
 
-# Run the server
 CMD ["python", "-u", "server.py"]

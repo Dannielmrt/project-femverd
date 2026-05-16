@@ -1,4 +1,3 @@
-# app/auth/security.py
 from fastapi import Security, HTTPException, status, Depends
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security import OAuth2PasswordBearer
@@ -11,8 +10,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_api_key(api_key_header: str = Security(api_key_header)) -> str:
     """
-    Extracts the API Key from the headers.
-    The actual bcrypt validation happens in the route.
+    Extracts the API Key from the headers
     """
     if not api_key_header:
         raise HTTPException(

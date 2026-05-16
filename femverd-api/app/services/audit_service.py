@@ -1,4 +1,3 @@
-# app/services/audit_service.py
 import socket
 import os
 from cryptography.fernet import Fernet

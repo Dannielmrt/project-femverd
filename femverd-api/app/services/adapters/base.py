@@ -2,7 +2,6 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
-# This is the internal, and clean, standard. 
 # ALL adapters must convert external JSONs into this format.
 class NormalizedEvent(BaseModel):
     provider_id: str

@@ -1,33 +1,26 @@
-# app/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    # Database
     DB_USER: str
     DB_PASSWORD: str
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
 
-    # Security
     FERNET_KEY: str
     API_KEY_ECOPARQUE: str
 
-    # JWT
     JWT_ALGORITHM: str = "RS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-    # Logger
     LOGGER_HOST: str
     LOGGER_PORT: int = 5000
 
-    # App
     DEBUG: bool = True
     PROJECT_NAME: str
     VERSION: str
 
-    # Computed property for SQLAlchemy
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
@@ -36,6 +29,9 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings():
+    """
+    Returns application environment settings using caching to bypass file system access loops.
+    """
     return Settings()
 
 settings = get_settings()

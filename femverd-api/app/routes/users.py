@@ -1,4 +1,3 @@
-# app/routes/users.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 import bcrypt

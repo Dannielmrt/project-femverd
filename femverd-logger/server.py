@@ -46,10 +46,8 @@ def handle_client(conn, addr, private_key):
     """
     print(f"[NEW CONNECTION] Connected to {addr}")
     try:
-        # Send server public key to client
         conn.sendall(serialize_pub(private_key.public_key()))
         
-        # Receive secret symmetric key encrypted, and decrypt it
         encrypted_sym_key = conn.recv(4096)
         sym_key = decrypt_rsa(private_key, encrypted_sym_key)
         f = Fernet(sym_key)
@@ -57,7 +55,6 @@ def handle_client(conn, addr, private_key):
         print(f"[SECURE CHANNEL] Established with {addr}")
 
         while True:
-            # Receive encrypted log data
             enc_data = conn.recv(4096)
             if not enc_data:
                 break

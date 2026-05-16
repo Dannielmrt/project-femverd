@@ -1,4 +1,3 @@
-# app/services/adapters/ecopark_v1.py
 from pydantic import BaseModel, Field, ValidationError
 from fastapi import HTTPException
 from .base import BaseAdapter, NormalizedEvent
@@ -27,7 +26,6 @@ class EcoparkAdapter(BaseAdapter):
         
         internal_material = material_mapping.get(valid_data.waste_type.lower(), valid_data.waste_type.lower())
         
-        # Return the normalized event (validated variables)
         return NormalizedEvent(
             provider_id=valid_data.ecopark_id,
             user_dni=valid_data.citizen_doc,

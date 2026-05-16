@@ -8,7 +8,6 @@ from app.models.external_system import ExternalSystem
 def seed_database():
     """
     Populates the database with initial test data.
-    Run this script only once.
     """
     db = SessionLocal()
     

@@ -1,5 +1,3 @@
-# app/services/auth_service.py
-# app/services/auth_service.py
 import jwt
 import os
 from datetime import datetime, timedelta
