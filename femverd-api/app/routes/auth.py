@@ -271,3 +271,17 @@ def get_user_rewards(
         } for r in redemptions
     ]
 
+@router.get("/green-points")
+def get_all_green_points(db: Session = Depends(get_db)):
+    """
+    Fetches the spatial coordinates of all registered Ecoparks from the cloud DB.
+    """
+    points = db.query(GreenPoint).all()
+    return [
+        {
+            "id": p.id,
+            "name": p.name,
+            "latitude": p.latitude,
+            "longitude": p.longitude
+        } for p in points
+    ]
