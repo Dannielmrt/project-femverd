@@ -18,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import com.example.femverd.data.TokenManager
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun SplashScreen(
@@ -53,27 +56,18 @@ fun SplashScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primaryContainer),
+            .background(MaterialTheme.colorScheme.surfaceBright),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Default.Eco,
-            contentDescription = "App Logo",
-            tint = MaterialTheme.colorScheme.primary,
+        // LOGO
+        Image(
+            painter = painterResource(id = com.example.femverd.R.drawable.logo_v2),
+            contentDescription = "FemVerd Official Logo",
+            contentScale = ContentScale.FillWidth,
             modifier = Modifier
-                .size(120.dp)
-                .alpha(alphaAnim)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "FemVerd",
-            style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.alpha(alphaAnim)
+                .fillMaxWidth(0.85f)
+                .alpha(alphaAnim) // fade-in animation
         )
     }
 }
