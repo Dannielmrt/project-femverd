@@ -14,11 +14,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
+import com.example.femverd.ui.screens.auth.RegisterScreen
 import com.example.femverd.ui.screens.certificate.CertificateScreen
+import com.example.femverd.ui.screens.help.HelpScreen
 import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
 import com.example.femverd.ui.screens.profile.ProfileScreen
 import com.example.femverd.ui.screens.rewards.RewardsScreen
+import com.example.femverd.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -35,6 +38,9 @@ fun FemVerdApp() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val actualRoute = navBackStackEntry?.destination?.route ?: currentRoute
 
+    val lockedDrawerRoutes = listOf("splash", "login", "register")
+    val isDrawerEnabled = actualRoute !in lockedDrawerRoutes
+
     val bottomNavItems = listOf(
         BottomNavItem.Home,
         BottomNavItem.History,
@@ -50,7 +56,7 @@ fun FemVerdApp() {
     // NavigationDrawer
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true,
+        gesturesEnabled = isDrawerEnabled,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
@@ -119,15 +125,43 @@ fun FemVerdApp() {
             // NavHost
             NavHost(
                 navController = navController,
-                startDestination = "login",
+                startDestination = "splash",
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable("splash") {
+                    SplashScreen(
+                        onNavigateToLogin = {
+                            navController.navigate("login") {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        },
+                        onNavigateToHome = {
+                            navController.navigate(BottomNavItem.Home.route) {
+                                popUpTo("splash") { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 composable("login") {
                     LoginScreen(
                         onLoginSuccess = {
                             navController.navigate(BottomNavItem.Home.route) {
                                 popUpTo("login") { inclusive = true }
                             }
+                        },
+                        onNavigateToRegister = {
+                            navController.navigate("register")
+                        }
+                    )
+                }
+
+                composable("register") {
+                    RegisterScreen(
+                        onRegisterSuccess = {
+                            navController.popBackStack()
+                        },
+                        onNavigateBack = {
+                            navController.popBackStack()
                         }
                     )
                 }
@@ -146,7 +180,9 @@ fun FemVerdApp() {
                 composable(DrawerItem.Certificate.route) {
                     CertificateScreen(navController = navController)
                 }
-                composable(DrawerItem.Help.route) { Text("Help Screen", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Help.route) {
+                    HelpScreen(navController = navController)
+                }
             }
         }
     }
