@@ -56,7 +56,7 @@ fun SplashScreen(
         Image(
             painter = painterResource(id = R.drawable.logo_v2),
             contentDescription = stringResource(id = R.string.desc_logo),
-            contentScale = ContentScale.FillWidth,
+            contentScale = ContentScale.Crop, // DI
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .alpha(alphaAnim)
