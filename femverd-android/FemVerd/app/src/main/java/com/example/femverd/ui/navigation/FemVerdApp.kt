@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.femverd.ui.screens.auth.LoginScreen
 import com.example.femverd.ui.screens.auth.RegisterScreen
 import com.example.femverd.ui.screens.certificate.CertificateScreen
+import com.example.femverd.ui.screens.help.HelpScreen
 import com.example.femverd.ui.screens.history.HistoryScreen
 import com.example.femverd.ui.screens.home.HomeScreen
 import com.example.femverd.ui.screens.profile.ProfileScreen
@@ -179,7 +180,9 @@ fun FemVerdApp() {
                 composable(DrawerItem.Certificate.route) {
                     CertificateScreen(navController = navController)
                 }
-                composable(DrawerItem.Help.route) { Text("Help Screen", Modifier.padding(16.dp)) }
+                composable(DrawerItem.Help.route) {
+                    HelpScreen(navController = navController)
+                }
             }
         }
     }

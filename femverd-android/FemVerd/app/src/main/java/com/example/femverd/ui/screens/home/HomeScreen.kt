@@ -77,9 +77,7 @@ fun DashboardContent(
     val progressToNextLevel = (pointsInCurrentLevel / 500f).toFloat()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         // HEADER
         Text(
@@ -95,15 +93,19 @@ fun DashboardContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        //MAIN CARD
+        // MAIN CARD
         ElevatedCard(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             shape = MaterialTheme.shapes.extraLarge,
             colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = 10.dp,
+                pressedElevation = 12.dp
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -156,7 +158,7 @@ fun DashboardContent(
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(48.dp))
 
         // REWARDS BUTTON
         FilledTonalButton(
@@ -198,6 +200,8 @@ fun DashboardContent(
             Spacer(modifier = Modifier.width(12.dp))
             Text("IDENTIFY AT ECOPARK", fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 
     // QR CODE DIALOG
