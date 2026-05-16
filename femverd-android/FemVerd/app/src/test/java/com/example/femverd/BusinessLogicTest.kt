@@ -9,7 +9,7 @@ class BusinessLogicTest {
     fun calculateUserLevel_isCorrect() {
         // Arrange
         val currentPoints = 750.0
-        val expectedLevel = 3 // 750 points means Level 2, because is 500 pts per level
+        val expectedLevel = 2 // 750 points means Level 2, because is 500 pts per level
 
         // Act
         // The business logic used in DashboardContent
