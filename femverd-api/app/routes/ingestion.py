@@ -1,62 +1,101 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from app.auth.security import verify_external_role
-from ..services import points_service
-from ..database import get_db
-from ..models.user import User
-from ..models.action import Action
-from app.services.security_service import decrypt_dni, encrypt_dni
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
+from typing import Dict, Any
+import bcrypt
+
+from app.auth.security import get_api_key
+from app.services import points_service
+from app.database import SessionLocal
+from app.models.user import User
+from app.models.action import Action
+from app.models.external_system import ExternalSystem
+from app.models.green_point import GreenPoint
+from app.models.material_rule import MaterialRule
+from app.services.security_service import hash_dni
+from app.services.audit_service import send_audit_log
+from app.services.adapters.ecopark_v1 import EcoparkAdapter
 
 router = APIRouter(prefix="/ingestion", tags=["Ingest M2M (External)"])
 
-class ExternalEvent(BaseModel):
-    provider_id: str
-    user_dni: str
-    material_type: str
-    amount_kg: float
+# Registry pattern for scalable M2M protocol adapters
+ADAPTER_REGISTRY = {
+    "ecopark_v1": EcoparkAdapter,
+}
 
-@router.post("/", dependencies=[Depends(verify_external_role)])
-def receive_event(event: ExternalEvent, db: Session = Depends(get_db)):
-    # Search users and decrypt to compare
-    all_users = db.query(User).all()
-    user = None
-    
-    for u in all_users:
-        if decrypt_dni(u.encrypted_dni) == event.user_dni:
-            user = u
-            break
-    
-    if not user:
-        # If DNI is not registered, raise a 404 error
-        raise HTTPException(status_code=404, detail="User not found in FemVerd")
+def get_adapter(adapter_type: str):
+    adapter_class = ADAPTER_REGISTRY.get(adapter_type.lower())
+    if not adapter_class:
+        raise HTTPException(status_code=400, detail=f"No adapter registered for type: {adapter_type}")
+    return adapter_class()
 
-    # Calculate points using our Service
-    points_earned = points_service.calculate_points(
-        material=event.material_type, 
-        kg=event.amount_kg
-    )
+def process_event_in_background(user_id: int, rule_id: int, green_point_id: int, quantity: float, provider_id: str):
+    """
+    Delegated worker function executing outside the main request and response
+    """
+    db = SessionLocal()
+    try:
+        rule = db.query(MaterialRule).filter(MaterialRule.id == rule_id).first()
+        points_earned = points_service.calculate_points(rule.points_per_unit, quantity)
+        
+        # Atomic points update to prevent database race conditions under high concurrency
+        db.query(User).filter(User.id == user_id).update({
+            "points_balance": User.points_balance + points_earned,
+            "total_accumulated_points": User.total_accumulated_points + points_earned
+        })
 
-    # Update user balance
-    user.points_balance += points_earned
+        new_action = Action(
+            user_id=user_id, 
+            quantity=quantity,
+            generated_points=points_earned,
+            green_point_id=green_point_id,
+            material_rule_id=rule_id
+        )
+        
+        db.add(new_action)
+        db.commit()
+        
+        print(f"BACKGROUND I/O SUCCESS: {points_earned} points provisioned.", flush=True)
+        send_audit_log(f"User ID {user_id} recycled {quantity}kg at {provider_id}")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"BACKGROUND I/O CRITICAL ERROR: {str(e)}", flush=True)
+    finally:
+        db.close()
 
-    # Create the "ticket" or action record
-    # Encrypt the DNI so it remains protected in the logs
-    new_action = Action(
-        user_dni=encrypt_dni(event.user_dni), 
-        provider_id=event.provider_id,
-        material_type=event.material_type,
-        amount_kg=event.amount_kg,
-        generated_points=points_earned
-    )
-    
-    # Save everything to the database
-    db.add(new_action)
-    db.commit()
+@router.post("/{provider_id}", status_code=status.HTTP_202_ACCEPTED)
+def receive_event(
+    provider_id: str, 
+    raw_payload: Dict[str, Any], 
+    background_tasks: BackgroundTasks, 
+    api_key: str = Depends(get_api_key)
+):
+    db = SessionLocal()
+    try:
+        provider = db.query(ExternalSystem).filter(ExternalSystem.provider_id == provider_id).first()
+        if not provider or not bcrypt.checkpw(api_key.encode('utf-8'), provider.api_key_hash.encode('utf-8')):
+            raise HTTPException(status_code=403, detail="Invalid API Key or Provider credentials")
 
-    return {
-        "status": "Accepted",
-        "user": user.user_name,
-        "points_earned": points_earned,
-        "new_total_balance": user.points_balance
-    }
+        adapter = get_adapter(provider.adapter_type)
+        event = adapter.normalize(raw_payload)
+
+        # Constant look via hashing
+        search_hash = hash_dni(event.user_dni)
+        user = db.query(User).filter(User.dni_hash == search_hash).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Target user identity not found")
+
+        rule = db.query(MaterialRule).filter(MaterialRule.material_name == event.material_type).first()
+        green_point = db.query(GreenPoint).filter(GreenPoint.provider_id == provider_id).first()
+        
+        if not rule or not green_point:
+            raise HTTPException(status_code=400, detail="Business logic rule or structural entity missing")
+
+        # put operations to the background queue
+        background_tasks.add_task(
+            process_event_in_background, 
+            user.id, rule.id, green_point.id, event.quantity, provider_id
+        )
+
+        return {"status": "Accepted", "message": "Event queued for asynchronous processing"}
+    finally:
+        db.close()

@@ -1,24 +1,39 @@
-from fastapi import Security, HTTPException, status
+from fastapi import Security, HTTPException, status, Depends
 from fastapi.security.api_key import APIKeyHeader
-import os
-from dotenv import load_dotenv
+from fastapi.security import OAuth2PasswordBearer
+from app.services.auth_service import verify_token
 
-load_dotenv()
-
-# Read the authentication key from environment variables
-API_KEY = os.getenv("API_KEY_ECOPARQUE")
-
-# Look for the "X-API-Key" header in the request
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-def verify_external_role(api_key: str = Security(api_key_header)):
+# (JWT) tells FastAPI where the login route is
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+def get_api_key(api_key_header: str = Security(api_key_header)) -> str:
     """
-    ACL (Access Control List): Verify if the request has permission 
-    to ingest data into the system.
+    Extracts the API Key from the headers
     """
-    if api_key != API_KEY:
+    if not api_key_header:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Insufficient permissions or invalid API Key."
+            detail="Access denied. API Key missing."
         )
-    return api_key
+    return api_key_header
+
+def get_current_user_token(token: str = Depends(oauth2_scheme)) -> str:
+    """
+    Extracts the JWT from the Authorization header, verifies the RSA signature,
+    and returns the user's DNI if valid.
+    """
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    user_dni = payload.get("sub")
+    if not user_dni:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token missing subject")
+        
+    return user_dni
