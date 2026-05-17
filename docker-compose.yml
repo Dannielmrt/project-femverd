@@ -1,38 +1,44 @@
+version: '3.8'
+
 services:
-  # Servicio de Base de Datos
+  # PostgreSQL
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: femverd_db
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: femverd_pass
-      POSTGRES_DB: femverd_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432"
+      - "5433:5432" 
     volumes:
       - ./database/data:/var/lib/postgresql/data
 
-  # API FastAPI
+  # API REST (FastAPI)
   api:
     build: ./femverd-api
     container_name: femverd_api
+    restart: always
     ports:
       - "8000:8000"
     volumes:
       - ./femverd-api:/app
-    env_file: .env
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql://admin:femverd_pass@db:5432/femverd_db
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
     depends_on:
       - db
-  
+
+  # TCP Logger
   logger:
-    build: ./femverd-logger
+    build: ././femverd-logger
     container_name: femverd_logger
+    restart: always
     ports:
       - "50000:50000"
     volumes:
       - ./femverd-logger:/app
-    networks:
-      - default
+    depends_on:
+      - api
