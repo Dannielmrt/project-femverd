@@ -84,7 +84,7 @@ Crea un archivo `.env` en el directorio `femverd-api/` basándote en el archivo 
 # Local Docker: DB_HOST=db | AWS EC2: DB_HOST=ip-publica-aws
 DB_USER=admin
 DB_PASSWORD=femverd_pass
-DB_HOST=db
+DB_HOST=13.48.42.5
 DB_PORT=5432
 DB_NAME=femverd_db
 
