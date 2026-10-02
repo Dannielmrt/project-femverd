@@ -7,7 +7,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791.svg?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?logo=docker)
 
-**FemVerd** es una plataforma tecnológica distribuida (App Móvil + Backend API) diseñada para centralizar, registrar y gamificar las acciones de reciclaje ciudadano. La aplicación transforma el compromiso ambiental en un proceso medible y gratificante, conectando a los ciudadanos con la infraestructura de ecoparques locales a través de incentivos directos y beneficios fiscales.
+**FemVerd** es una plataforma tecnológica distribuida (App Móvil + Backend API) diseñada para centralizar, registrar y gamificar el reciclaje ciudadano. Tomando como marco de aplicación piloto la red de ecoparques de la Comunidad Valenciana, la plataforma conecta a los usuarios con la infraestructura local mediante incentivos directos y una visualización clara e intuitiva de su actividad, apoyándose en una arquitectura modular fácilmente escalable.
 
 ---
 
